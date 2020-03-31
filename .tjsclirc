@@ -1,0 +1,24 @@
+{
+  engine: 'tsj',
+
+  // current working directory 
+  cwd: '.',
+
+  // tsconfig path
+  project: './tsconfig.json',
+
+  // filename prefix in JSONSchema, default value is JSC_
+  prefix: 'JSC_',
+
+  // TSJ generator option
+  topRef: false,
+
+  // formatContent
+  format: "import { jsc } from 'jsonschema-type';\\n\
+\\n\
+// tslint:disable max-line-length\\n\
+// tslint:disable-next-line:variable-name\\n\
+const JSC_%{{TYPE_NAME}}%: jsc.IObjectSchema = %{{SCHEMA_JSON_CONTENT}}%;\\n\
+\\n\
+export default JSC_%{{TYPE_NAME}}%;"
+}

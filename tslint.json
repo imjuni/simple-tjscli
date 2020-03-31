@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "tslint:latest",
+    "tslint-config-airbnb",
+    "tslint-config-prettier"
+  ],
+  "rules": {
+    "no-boolean-literal-compare": false,
+    "max-line-length": [true, 130],
+    "import-sources-order": ["case-insensitive"],
+    "no-submodule-imports": false,
+    "prefer-array-literal": [false],
+    "object-shorthand-properties-first": [false],
+    "object-literal-sort-keys": false,
+    "no-console": false,
+    "ordered-imports": true,
+    "variable-name": [true, "check-format", "allow-leading-underscore"],
+    "trailing-comma": [true, {"multiline": "always", "singleline": "never"}]
+  }
+}
