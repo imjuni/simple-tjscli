@@ -18,7 +18,7 @@ export async function projectLoad({
   >
 > {
   if (!(await promisify(exists)(project))) {
-    return efail(new Error(`cannot found project path: ${project}`));
+    return efail(new Error(`Could not found project path: ${project}`));
   }
 
   if (engine === 'tjs') {

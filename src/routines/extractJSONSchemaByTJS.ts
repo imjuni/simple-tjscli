@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import debug from 'debug';
 import fs from 'fs';
 import { efail, epass, isEmpty, isFail, isNotEmpty } from 'my-easy-fp';
@@ -66,7 +67,10 @@ export async function extractJSONSchemaByTJS({
       return efail(contents.fail);
     }
 
-    await writeFile(path.join(outputDir, filename), contents.pass);
+    const outputFilename = path.join(outputDir, filename);
+    await writeFile(outputFilename, contents.pass);
+
+    console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
     return epass(true);
   } catch (err) {

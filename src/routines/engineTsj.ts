@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import debug from 'debug';
 import { efail, epass, isFail, isNotEmpty } from 'my-easy-fp';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
@@ -19,17 +20,23 @@ export async function engineTsj(formatFromConfig: string | undefined, option: IT
     return efail(project.fail);
   }
 
+  console.log(chalk.green('Project: ', project.pass.project));
+
   const sources = await sourceFileLoad({ cwd: option.cwd, files: option.files });
 
   if (isFail(sources)) {
     return efail(sources.fail);
   }
 
+  console.log(chalk.green('Source: ', sources.pass.files.join(', ')));
+
   const interfaces = await interfaceLoad({ files: sources.pass.files, option });
 
   if (isFail(interfaces)) {
     return efail(interfaces.fail);
   }
+
+  console.log(chalk.green('Type: ', interfaces.pass.map((interfaceInfo) => interfaceInfo.type).join(', ')));
 
   log('foramt: ', format);
   log('proejct: ', option.cwd, project.pass);

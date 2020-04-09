@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import debug from 'debug';
-import { isPass } from 'my-easy-fp';
+import { isPass, isFail } from 'my-easy-fp';
 import * as path from 'path';
 import yargs, { Argv } from 'yargs';
 import { ITjsCliOption } from './interfaces/ITjsCliOption';
@@ -37,7 +37,11 @@ const argv = yargs
           cwd: args.cwd ?? config.cwd ?? process.cwd(),
         };
 
-        await engineTsj(config.format, option);
+        const result = await engineTsj(config.format, option);
+
+        if (isFail(result)) {
+          console.log(chalk.red('Error: ', result.fail.message));
+        }
 
         log('entered-tsj: ', option);
       } catch (err) {
@@ -75,7 +79,11 @@ const argv = yargs
         cwd: args.cwd ?? config.cwd ?? process.cwd(),
       };
 
-      await engineTjs(config.format, option);
+      const result = await engineTjs(config.format, option);
+
+      if (isFail(result)) {
+        console.log(chalk.red('Error: ', result.fail.message));
+      }
 
       log('entered-tjs: ', option);
     },
