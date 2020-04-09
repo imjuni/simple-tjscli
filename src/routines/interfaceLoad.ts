@@ -81,6 +81,11 @@ async function prompt({ types }: { types: ICreateSchemaTarget[] }) {
 
 function optionLoad({ interfaces, option }: { interfaces: ICreateSchemaTarget[]; option: ITjsCliOption }) {
   try {
+    // return all interface type, that not entered type name
+    if (option.types === undefined || option.types === null || option.types.length <= 0) {
+      return interfaces;
+    }
+
     return interfaces.filter((interfaceName) => {
       return option.types.reduce<boolean>((aggregation, current) => {
         return aggregation || interfaceName.type.indexOf(current) >= 0;
@@ -115,7 +120,7 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
       prev.concat(current),
     );
 
-    const usingPrompt = files.length === 1 && option.types.length === 0;
+    const usingPrompt = files.length === 1 && option.types.length !== 1;
     const processed = usingPrompt ? await prompt({ types }) : optionLoad({ interfaces: types, option });
 
     log('types: ', processed);

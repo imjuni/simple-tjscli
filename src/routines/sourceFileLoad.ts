@@ -13,11 +13,13 @@ const log = debug('tjscli:cli');
 
 async function fileLoad({ cwd, files }: { cwd: string; files: string[] }) {
   const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
-  const filtered = tsfiles.filter((tsfile) => {
-    return files.reduce<boolean>((aggregation, current) => {
-      return aggregation || tsfile.indexOf(current) >= 0;
-    }, false);
-  });
+  const filtered = tsfiles
+    .filter((tsfile) => {
+      return files.reduce<boolean>((aggregation, current) => {
+        return aggregation || tsfile.indexOf(current) >= 0;
+      }, false);
+    })
+    .filter((tsfile) => !path.basename(tsfile).startsWith('JSC_'));
 
   return filtered;
 }
@@ -59,7 +61,7 @@ async function prompt({ cwd }: { cwd: string }) {
 
 export async function sourceFileLoad({ cwd, files }: { cwd: string; files: string[] }) {
   const exists = promisify(callbackExists);
-  const usePrompt = files !== undefined && files !== null && files.length > 0;
+  const usePrompt = files === undefined || files === null || files.length <= 0;
   const tsfiles = usePrompt ? await prompt({ cwd }) : await fileLoad({ cwd, files });
 
   const isExsits = await Promise.all(

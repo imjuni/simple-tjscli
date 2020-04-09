@@ -1,6 +1,6 @@
 {
   "name": "simple-tjscli",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "script": "DEBUG=tjscli:* TS_NODE_FILES=true TS_NODE_PROJECT=./tsconfig.prod.json ts-node ./src/tjscli.ts",
@@ -14,7 +14,8 @@
     "build": "NODE_ENV=production npx webpack --config webpack.config.prod.js",
     "prebuild:dev": "npm run clean",
     "build:dev": "NODE_ENV=develop npx webpack --config webpack.config.dev.js",
-    "lint": "tslint src/**/*.ts"
+    "lint": "tslint src/**/*.ts",
+    "debug": "DEBUG=tjscli:* TS_NODE_PROJECT=tsconfig.json TS_NODE_FILES=true node -r ts-node/register -r tsconfig-paths/register --inspect --nolazy src/tjscli.ts"
   },
   "repository": {
     "type": "git",
@@ -53,6 +54,7 @@
     "rimraf": "3.0.2",
     "ts-jest": "25.3.0",
     "ts-loader": "6.2.2",
+    "tsconfig-paths": "^3.9.0",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
     "tslint": "^6.1.0",
     "tslint-config-airbnb": "^5.11.2",
