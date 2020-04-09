@@ -120,7 +120,7 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
       prev.concat(current),
     );
 
-    const usingPrompt = files.length === 1 && option.types.length !== 1;
+    const usingPrompt = files.length === 1 && option.types.length !== 1 && types.length !== 1;
     const processed = usingPrompt ? await prompt({ types }) : optionLoad({ interfaces: types, option });
 
     log('types: ', processed);
