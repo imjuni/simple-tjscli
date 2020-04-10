@@ -33,4 +33,13 @@ export interface ITjsCliOption {
 
   /** TSJ generator option */
   topRef?: boolean;
+
+  /** TSJ generator option */
+  expose?: 'all' | 'none' | 'export';
+
+  /** TSJ generator option */
+  jsDoc?: 'none' | 'extended' | 'basic';
+
+  /** TSJ generator option */
+  extraTags?: string[];
 }

@@ -40,10 +40,13 @@ export async function extractJSONSchemaByTSJ({
       path: path.join(option.cwd, target.file),
       tsconfig: option.project,
       type: target.type,
-      expose: 'export',
-      jsDoc: 'extended',
+      expose: option.expose ?? 'export',
+      jsDoc: option.jsDoc ?? 'extended',
       topRef: option.topRef ?? false,
+      extraTags: option.extraTags ?? [],
     });
+
+    log('topRef: ', option.topRef ?? false);
 
     const schema = generator.createSchema(target.type);
     const schemaJSON = JSON.stringify(schema, null, 2);

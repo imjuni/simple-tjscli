@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import debug from 'debug';
-import { isPass, isFail } from 'my-easy-fp';
+import { isFail, isPass } from 'my-easy-fp';
 import * as path from 'path';
 import yargs, { Argv } from 'yargs';
 import { ITjsCliOption } from './interfaces/ITjsCliOption';
@@ -16,7 +16,26 @@ const argv = yargs
     command: '$0 [cwds...]',
     aliases: 'tsj [cwds...]',
     builder: (args: Argv<{}>) => {
+      args.option('extraTags', {
+        alias: 'a',
+        describe: 'TJS option extraTags',
+        type: 'array',
+      });
+
+      args.option('jsDoc', {
+        alias: 'd',
+        describe: 'TJS option jsDoc',
+        type: 'string',
+      });
+
+      args.option('expose', {
+        alias: 'e',
+        describe: 'TJS optin expose',
+        type: 'string',
+      });
+
       const _args: any = args;
+
       return _args;
     },
     handler: async (args) => {
@@ -35,6 +54,9 @@ const argv = yargs
           formatPath: args.formatPath ?? config.formatPath ?? undefined,
           topRef: args.topRef ?? config.topRef ?? false,
           cwd: args.cwd ?? config.cwd ?? process.cwd(),
+          expose: args.expose ?? config.expose ?? 'export',
+          jsDoc: args.jsDoc ?? config.jsDoc ?? 'extended',
+          extraTags: args.extraTags ?? config.extraTags ?? [],
         };
 
         const result = await engineTsj(config.format, option);
@@ -53,12 +75,6 @@ const argv = yargs
   .command<ITjsCliOption>({
     command: 'tjs [cwds...]',
     builder: (args: Argv<{}>) => {
-      args.option('files', {
-        alias: 'f',
-        describe: 'export list create filefirst, no option false, option true',
-        type: 'array',
-      });
-
       const _args: any = args;
       return _args;
     },
@@ -68,7 +84,7 @@ const argv = yargs
       const config: { [key: string]: any } = isPass(configLoaded) ? configLoaded.pass : {};
 
       const option: ITjsCliOption = {
-        engine: 'tsj',
+        engine: 'tjs',
         project: process.env.TS_NODE_PROJECT ?? path.join(process.cwd(), 'tsconfig.json'),
         files: args.files ?? config.files ?? [],
         types: args.types ?? config.types ?? [],
@@ -110,12 +126,12 @@ const argv = yargs
   })
   .option('prefix', {
     alias: 'x',
-    describe: '',
+    describe: "prefix of output filename, default 'JSC_'",
     type: 'string',
   })
   .option('format', {
     alias: 'r',
-    describe: '',
+    describe: 'output contents layout',
     type: 'string',
   })
   .help().argv;

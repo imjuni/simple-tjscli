@@ -13,6 +13,12 @@
   // TSJ generator option
   topRef: false,
 
+  jsDoc: 'extended',
+
+  expose: 'none',
+
+  extraTags: ['dateformatex'],
+
   // formatContent
   format: "import { jsc } from 'jsonschema-type';\\n\
 \\n\
