@@ -22,6 +22,9 @@ export interface ITjsCliOption {
   /** type name in input filename */
   types: string[];
 
+  /** output type */
+  outputType: 'json' | 'ts';
+
   /** output file directory */
   output?: string;
 

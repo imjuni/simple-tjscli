@@ -50,6 +50,7 @@ const argv = yargs
           files: args.files ?? config.files ?? [],
           types: args.types ?? config.types ?? [],
           output: args.output ?? config.output ?? undefined,
+          outputType: args.outputType ?? config.outputType ?? 'ts',
           prefix: args.prefix ?? config.prefix ?? 'JSC_',
           formatPath: args.formatPath ?? config.formatPath ?? undefined,
           topRef: args.topRef ?? config.topRef ?? false,
@@ -89,6 +90,7 @@ const argv = yargs
         files: args.files ?? config.files ?? [],
         types: args.types ?? config.types ?? [],
         output: args.output ?? config.output ?? undefined,
+        outputType: args.outputType ?? config.outputType ?? 'ts',
         prefix: args.prefix ?? config.prefix ?? 'JSC_',
         formatPath: args.formatPath ?? config.formatPath ?? undefined,
         topRef: args.topRef ?? config.topRef ?? false,
@@ -117,6 +119,11 @@ const argv = yargs
   .option('project', {
     alias: 'p',
     describe: 'project path',
+    type: 'string',
+  })
+  .option('output-type', {
+    alias: 'u',
+    describe: "output-type: 'json' or 'ts', default ts",
     type: 'string',
   })
   .option('output', {

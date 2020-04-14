@@ -121,6 +121,11 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
     );
 
     const usingPrompt = files.length === 1 && option.types.length !== 1 && types.length !== 1;
+
+    if (usingPrompt && types.length === 0) {
+      return efail(new Error(`Not exists interface or type in ${files.join(', ')}`));
+    }
+
     const processed = usingPrompt ? await prompt({ types }) : optionLoad({ interfaces: types, option });
 
     log('types: ', processed);

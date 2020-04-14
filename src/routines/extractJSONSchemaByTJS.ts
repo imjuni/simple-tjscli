@@ -52,15 +52,21 @@ export async function extractJSONSchemaByTJS({
 
     const schemaJSON = JSON.stringify(schema, null, 2);
     const outputDir = getOutputDir({ target, option });
-    const fileType = isEmpty(format) ? 'json' : 'ts';
+    const fileType = option.outputType;
     const filename = `${option.prefix ?? ''}${target.type}.${fileType}`;
 
     log(format);
-    log(`dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
+    log(`type: ${option.outputType} / dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
 
     const contents =
-      fileType === 'ts' && format !== undefined
-        ? await prettierProcessing({ format, target, contents: schemaJSON, option })
+      fileType === 'ts'
+        ? await prettierProcessing({
+            format,
+            filename: target.type,
+            target,
+            contents: schemaJSON,
+            option,
+          })
         : epass(schemaJSON);
 
     if (isFail(contents)) {

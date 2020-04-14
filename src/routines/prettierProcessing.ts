@@ -1,27 +1,34 @@
+import debug from 'debug';
 import { efail, epass } from 'my-easy-fp';
 import prettier from 'prettier';
 import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
 
+const log = debug('tjscli:prettierProcessing');
+
 export async function prettierProcessing({
   format,
   target,
+  filename,
   contents,
   option,
 }: {
   target: ICreateSchemaTarget;
   format: string | undefined;
+  filename: string;
   contents: string;
   option: ITjsCliOption;
 }) {
   try {
+    log('processed: ', format);
+
     const processed =
       format !== undefined
         ? format
             .replace(/\\n/g, '\n')
             .replace(/\%\{\{TYPE_NAME\}\}\%/g, target.type)
             .replace(/\%\{\{SCHEMA_JSON_CONTENT\}\}\%/g, contents)
-        : contents;
+        : `// tslint:disable-next-line variable-name\nexport const ${filename} = ${contents}`;
 
     const prettierOption = await prettier.resolveConfig(option.cwd);
     const prettiered = prettier.format(
