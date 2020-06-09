@@ -60,3 +60,6 @@ artifact/
 
 # sonarqube work dir
 .scannerwork
+
+# Exclude registry congiruation
+.npmrc

@@ -44,6 +44,7 @@ export async function extractJSONSchemaByTSJ({
       jsDoc: option.jsDoc ?? 'extended',
       topRef: option.topRef ?? false,
       extraTags: option.extraTags ?? [],
+      additionalProperties: option.additionalProperties ?? false,
     });
 
     log('topRef: ', option.topRef ?? false);

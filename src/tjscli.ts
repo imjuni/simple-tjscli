@@ -34,6 +34,12 @@ const argv = yargs
         type: 'string',
       });
 
+      args.option('additionalProperties', {
+        alias: 'n',
+        describe: 'TJS optin additionalProperties',
+        type: 'string',
+      });
+
       const _args: any = args;
 
       return _args;
@@ -58,6 +64,7 @@ const argv = yargs
           expose: args.expose ?? config.expose ?? 'export',
           jsDoc: args.jsDoc ?? config.jsDoc ?? 'extended',
           extraTags: args.extraTags ?? config.extraTags ?? [],
+          additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
         };
 
         const result = await engineTsj(config.format, option);
@@ -93,6 +100,7 @@ const argv = yargs
         outputType: args.outputType ?? config.outputType ?? 'ts',
         prefix: args.prefix ?? config.prefix ?? 'JSC_',
         formatPath: args.formatPath ?? config.formatPath ?? undefined,
+        additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
         topRef: args.topRef ?? config.topRef ?? false,
         cwd: args.cwd ?? config.cwd ?? process.cwd(),
       };

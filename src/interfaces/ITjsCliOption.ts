@@ -45,4 +45,7 @@ export interface ITjsCliOption {
 
   /** TSJ generator option */
   extraTags?: string[];
+
+  /** TSJ generator option */
+  additionalProperties: boolean;
 }
