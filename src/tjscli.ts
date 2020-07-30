@@ -37,7 +37,7 @@ const argv = yargs
       args.option('additionalProperties', {
         alias: 'n',
         describe: 'TJS optin additionalProperties',
-        type: 'string',
+        type: 'boolean',
       });
 
       const _args: any = args;
