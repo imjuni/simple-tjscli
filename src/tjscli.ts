@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import debug from 'debug';
-import { isFail, isPass } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import * as path from 'path';
 import yargs, { Argv } from 'yargs';
 import { ITjsCliOption } from './interfaces/ITjsCliOption';
@@ -48,7 +48,7 @@ const argv = yargs
       try {
         const cwd = args.cwd ?? process.cwd();
         const configLoaded = await configFileLoad({ cwd });
-        const config: { [key: string]: any } = isPass(configLoaded) ? configLoaded.pass : {};
+        const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
 
         const option: ITjsCliOption = {
           engine: 'tsj',
@@ -69,8 +69,8 @@ const argv = yargs
 
         const result = await engineTsj(config.format, option);
 
-        if (isFail(result)) {
-          console.log(chalk.red('Error: ', result.fail.message));
+        if (TEI.isLeft(result)) {
+          console.log(chalk.red('Error: ', result.left.message));
         }
 
         log('entered-tsj: ', option);
@@ -89,7 +89,7 @@ const argv = yargs
     handler: async (args) => {
       const cwd = args.cwd ?? process.cwd();
       const configLoaded = await configFileLoad({ cwd });
-      const config: { [key: string]: any } = isPass(configLoaded) ? configLoaded.pass : {};
+      const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
 
       const option: ITjsCliOption = {
         engine: 'tjs',
@@ -107,8 +107,8 @@ const argv = yargs
 
       const result = await engineTjs(config.format, option);
 
-      if (isFail(result)) {
-        console.log(chalk.red('Error: ', result.fail.message));
+      if (TEI.isLeft(result)) {
+        console.log(chalk.red('Error: ', result.left.message));
       }
 
       log('entered-tjs: ', option);

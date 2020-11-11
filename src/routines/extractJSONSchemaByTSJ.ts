@@ -1,7 +1,8 @@
 import chalk from 'chalk';
 import debug from 'debug';
 import fs from 'fs';
-import { efail, Either, epass, isEmpty, isFail, isNotEmpty } from 'my-easy-fp';
+import { isNotEmpty } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import path from 'path';
 import * as TSJ from 'ts-json-schema-generator';
 import util from 'util';
@@ -30,15 +31,28 @@ export async function extractJSONSchemaByTSJ({
   option: ITjsCliOption;
   target: ICreateSchemaTarget;
   format: string | undefined;
-}): Promise<Either<boolean, Error>> {
+}): Promise<TEI.Either<Error, boolean>> {
   try {
-    log('Project Path: ', option.project);
-    log('A: ', path.resolve(path.join(option.cwd, option.project)));
-
+    const resolvedTsconfig = path.resolve(path.join(option.cwd, option.project));
     const writeFile = util.promisify(fs.writeFile);
+
+    log('Project Path: ', option.project);
+    log('A: ', resolvedTsconfig);
+
+    log('B: ', {
+      path: path.join(option.cwd, target.file),
+      tsconfig: resolvedTsconfig,
+      type: target.type,
+      expose: option.expose ?? 'export',
+      jsDoc: option.jsDoc ?? 'extended',
+      topRef: option.topRef ?? false,
+      extraTags: option.extraTags ?? [],
+      additionalProperties: option.additionalProperties ?? false,
+    });
+
     const generator = TSJ.createGenerator({
       path: path.join(option.cwd, target.file),
-      tsconfig: option.project,
+      tsconfig: resolvedTsconfig,
       type: target.type,
       expose: option.expose ?? 'export',
       jsDoc: option.jsDoc ?? 'extended',
@@ -67,22 +81,24 @@ export async function extractJSONSchemaByTSJ({
             contents: schemaJSON,
             option,
           })
-        : epass(schemaJSON);
+        : TEI.right(schemaJSON);
 
-    if (isFail(contents)) {
-      return efail(contents.fail);
+    if (TEI.isLeft(contents)) {
+      return TEI.left(contents.left);
     }
 
     const outputFilename = path.join(outputDir, filename);
-    await writeFile(outputFilename, contents.pass);
+    await writeFile(outputFilename, contents.right);
 
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
-    return epass(true);
+    return TEI.right(true);
   } catch (err) {
     log(err.message);
     log(err.stack);
 
-    return efail(err);
+    err.message = `[${target.file}/${target.type}]${err.message}`;
+
+    return TEI.left(err as Error);
   }
 }

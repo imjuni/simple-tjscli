@@ -1,13 +1,14 @@
 import debug from 'debug';
 import fastGlob from 'fast-glob';
-import { exists as callbackExists } from 'fs';
 import fuzzy from 'fuzzy';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
-import { efail, epass, isFalse, isTrue } from 'my-easy-fp';
+import { isFalse, isTrue } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import * as path from 'path';
 import { promisify } from 'util';
 import { IPromptAnswerSelectFile } from '../interfaces/IPrompt';
+import { aexists } from './aexists';
 
 const log = debug('tjscli:cli');
 
@@ -60,26 +61,25 @@ async function prompt({ cwd }: { cwd: string }) {
 }
 
 export async function sourceFileLoad({ cwd, files }: { cwd: string; files: string[] }) {
-  const exists = promisify(callbackExists);
   const usePrompt = files === undefined || files === null || files.length <= 0;
   const tsfiles = usePrompt ? await prompt({ cwd }) : await fileLoad({ cwd, files });
 
   const isExsits = await Promise.all(
     tsfiles.map((file) =>
       (async () => ({
-        exists: await exists(file),
+        exists: await aexists(file),
         file,
       }))(),
     ),
   );
 
-  const existFiles = isExsits.filter((exist) => isTrue(exist.exists));
+  const existFiles = isExsits.some((exist) => isFalse(exist.exists));
 
-  if (existFiles.length <= 0) {
-    return efail(new Error(`Every files not exists: ${tsfiles.join(', ')}`));
+  if (isTrue(existFiles)) {
+    return TEI.left(new Error(`Some files not exists: ${tsfiles.join(', ')}`));
   }
 
-  return epass({
+  return TEI.right({
     files: tsfiles,
   });
 }

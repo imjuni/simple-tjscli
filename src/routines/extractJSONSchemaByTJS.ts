@@ -1,9 +1,10 @@
 import chalk from 'chalk';
 import debug from 'debug';
 import fs from 'fs';
-import { efail, epass, isEmpty, isFail, isNotEmpty } from 'my-easy-fp';
+import { isNotEmpty } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import path from 'path';
-import typescript from 'typescript';
+import typescript, { textSpanIsEmpty } from 'typescript';
 import * as TJS from 'typescript-json-schema';
 import util from 'util';
 import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
@@ -67,22 +68,22 @@ export async function extractJSONSchemaByTJS({
             contents: schemaJSON,
             option,
           })
-        : epass(schemaJSON);
+        : TEI.right(schemaJSON);
 
-    if (isFail(contents)) {
-      return efail(contents.fail);
+    if (TEI.isLeft(contents)) {
+      return TEI.left(contents.left);
     }
 
     const outputFilename = path.join(outputDir, filename);
-    await writeFile(outputFilename, contents.pass);
+    await writeFile(outputFilename, contents.right);
 
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
-    return epass(true);
+    return TEI.right(true);
   } catch (err) {
     log(err.message);
     log(err.stack);
 
-    return efail(err);
+    return TEI.left(err as Error);
   }
 }

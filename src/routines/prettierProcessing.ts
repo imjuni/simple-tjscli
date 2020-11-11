@@ -1,5 +1,5 @@
 import debug from 'debug';
-import { efail, epass } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import prettier from 'prettier';
 import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
@@ -44,8 +44,8 @@ export async function prettierProcessing({
         : prettierOption,
     );
 
-    return epass(prettiered);
+    return TEI.right(prettiered);
   } catch (err) {
-    return efail(err);
+    return TEI.left(err as Error);
   }
 }

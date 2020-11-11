@@ -1,10 +1,9 @@
 import debug from 'debug';
-import { readFile as readFileCallback } from 'fs';
+import * as fs from 'fs';
 import inquirer from 'inquirer';
-import { efail, epass } from 'my-easy-fp';
 import * as path from 'path';
 import typescript from 'typescript';
-import { promisify } from 'util';
+import * as TEI from 'fp-ts/Either';
 import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
 import { IPromptAnswerSelectType } from '../interfaces/IPrompt';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
@@ -98,8 +97,6 @@ function optionLoad({ interfaces, option }: { interfaces: ICreateSchemaTarget[];
 
 export async function interfaceLoad({ files, option }: { files: string[]; option: ITjsCliOption }) {
   try {
-    const readFile = promisify(readFileCallback);
-
     const sourceFiles = await Promise.all(
       files.map((file) =>
         (async () => {
@@ -107,7 +104,7 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
             file,
             source: typescript.createSourceFile(
               path.join(option.cwd, file),
-              (await readFile(file)).toString(),
+              (await fs.promises.readFile(file)).toString(),
               typescript.ScriptTarget.ES2017,
               /* setParentNodes */ true,
             ),
@@ -123,15 +120,15 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
     const usingPrompt = files.length === 1 && option.types.length !== 1 && types.length !== 1;
 
     if (usingPrompt && types.length === 0) {
-      return efail(new Error(`Not exists interface or type in ${files.join(', ')}`));
+      return TEI.left(new Error(`Not exists interface or type in ${files.join(', ')}`));
     }
 
     const processed = usingPrompt ? await prompt({ types }) : optionLoad({ interfaces: types, option });
 
     log('types: ', processed);
 
-    return epass(processed);
+    return TEI.right(processed);
   } catch (err) {
-    return efail(err);
+    return TEI.left(err as Error);
   }
 }

@@ -1,5 +1,5 @@
 import { exists, readFile } from 'fs';
-import { efail, Either, epass } from 'my-easy-fp';
+import * as TEI from 'fp-ts/Either';
 import { promisify } from 'util';
 
 export async function projectLoad({
@@ -9,28 +9,28 @@ export async function projectLoad({
   engine: string;
   project: string;
 }): Promise<
-  Either<
+  TEI.Either<
+    Error,
     {
       project: string;
       tsconfig?: string;
-    },
-    Error
+    }
   >
 > {
   if (!(await promisify(exists)(project))) {
-    return efail(new Error(`Could not found project path: ${project}`));
+    return TEI.left(new Error(`Could not found project path: ${project}`));
   }
 
   if (engine === 'tjs') {
     const tsconfig = JSON.parse((await promisify(readFile)(project)).toString());
 
-    return epass({
+    return TEI.right({
       project,
       tsconfig,
     });
   }
 
-  return epass({
+  return TEI.right({
     project,
   });
 }
