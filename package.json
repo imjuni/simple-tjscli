@@ -1,12 +1,12 @@
 {
   "name": "simple-tjscli",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "script": "DEBUG=tjscli:* TS_NODE_FILES=true TS_NODE_PROJECT=./tsconfig.prod.json ts-node ./src/tjscli.ts",
     "clean": "rimraf dist artifact",
     "prepub": "npm run build",
-    "pub": "npm publish --access=public",
+    "pub": "npm publish --registry https://registry.npmjs.org --access=public",
     "prepub:dev": "npm run build",
     "pub:dev": "npm publish --registry http://localhost:8901 --force",
     "build:tsc": "node_modules/.bin/tsc --noemit -p tsconfig.json",
@@ -72,11 +72,11 @@
     "luxon": "^1.22.2",
     "my-easy-fp": "^0.6.0",
     "prettier": "^2.1.2",
-    "ts-json-schema-generator": "^0.78.0",
+    "ts-json-schema-generator": "^0.82.0",
     "ts-node": "^8.8.1",
     "tslib": "1.11.1",
-    "typescript": "^4.0.5",
-    "typescript-json-schema": "^0.42.0",
+    "typescript": "^4.1.3",
+    "typescript-json-schema": "^0.47.0",
     "uuid": "7.0.2",
     "yargs": "^15.3.1"
   }
