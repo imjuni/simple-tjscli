@@ -34,6 +34,9 @@ export interface ITjsCliOption {
   /** TypeScript format */
   formatPath?: string;
 
+  /** TSJ generator option: skip type check for better performance */
+  skipTypeCheck?: boolean;
+
   /** TSJ generator option */
   topRef?: boolean;
 

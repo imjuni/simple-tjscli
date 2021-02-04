@@ -26,7 +26,7 @@ const config = {
   },
 
   plugins: [
-    new webpack.BannerPlugin({ banner: '#!/usr/bin/env node --harmony', raw: true }),
+    new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
   ],
 
   entry: {

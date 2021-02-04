@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import debug from 'debug';
+import * as TEI from 'fp-ts/Either';
 import fs from 'fs';
 import { isNotEmpty } from 'my-easy-fp';
-import * as TEI from 'fp-ts/Either';
 import path from 'path';
 import * as TSJ from 'ts-json-schema-generator';
 import util from 'util';
@@ -46,6 +46,7 @@ export async function extractJSONSchemaByTSJ({
       expose: option.expose ?? 'export',
       jsDoc: option.jsDoc ?? 'extended',
       topRef: option.topRef ?? false,
+      skipTypeCheck: option.skipTypeCheck ?? false,
       extraTags: option.extraTags ?? [],
       additionalProperties: option.additionalProperties ?? false,
     });
@@ -57,6 +58,7 @@ export async function extractJSONSchemaByTSJ({
       expose: option.expose ?? 'export',
       jsDoc: option.jsDoc ?? 'extended',
       topRef: option.topRef ?? false,
+      skipTypeCheck: option.skipTypeCheck ?? false,
       extraTags: option.extraTags ?? [],
       additionalProperties: option.additionalProperties ?? false,
     });
