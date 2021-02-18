@@ -1,12 +1,11 @@
 import debug from 'debug';
 import fastGlob from 'fast-glob';
+import * as TEI from 'fp-ts/Either';
 import fuzzy from 'fuzzy';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
 import { isFalse, isTrue } from 'my-easy-fp';
-import * as TEI from 'fp-ts/Either';
 import * as path from 'path';
-import { promisify } from 'util';
 import { IPromptAnswerSelectFile } from '../interfaces/IPrompt';
 import { aexists } from './aexists';
 
@@ -15,11 +14,9 @@ const log = debug('tjscli:cli');
 async function fileLoad({ cwd, files }: { cwd: string; files: string[] }) {
   const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
   const filtered = tsfiles
-    .filter((tsfile) => {
-      return files.reduce<boolean>((aggregation, current) => {
-        return aggregation || tsfile.indexOf(current) >= 0;
-      }, false);
-    })
+    .filter((tsfile) =>
+      files.reduce<boolean>((aggregation, current) => aggregation || tsfile.indexOf(current) >= 0, false),
+    )
     .filter((tsfile) => !path.basename(tsfile).startsWith('JSC_'));
 
   return filtered;
@@ -31,6 +28,7 @@ async function prompt({ cwd }: { cwd: string }) {
 
     const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
     const excludeJSC = tsfiles.filter((file) => isFalse(file.startsWith('JSC_')));
+
     const answer = await inquirer.prompt<IPromptAnswerSelectFile>([
       {
         type: 'autocomplete',
@@ -39,14 +37,13 @@ async function prompt({ cwd }: { cwd: string }) {
         message: 'Select file for JSONSchema extraction: ',
         source: (_answersSoFar: any, input: string | undefined) => {
           const safeInput = input === undefined || input === null ? '' : input;
-          return Promise.resolve(
-            fuzzy
-              .filter(safeInput, excludeJSC)
-              .filter((fuzzyMatched) => fuzzyMatched.string.indexOf(`${path.sep}JSC_`) < 0)
-              .filter((fuzzyMatched) => fuzzyMatched.score > 0.8)
-              .sort((left, right) => right.score - left.score)
-              .map((fuzzyMatched) => fuzzyMatched.string ?? ''),
-          );
+
+          return fuzzy
+            .filter(safeInput, excludeJSC)
+            .filter((fuzzyMatched) => fuzzyMatched.string.indexOf(`${path.sep}JSC_`) < 0)
+            .filter((fuzzyMatched) => fuzzyMatched.score > 0.8)
+            .sort((left, right) => right.score - left.score)
+            .map((fuzzyMatched) => fuzzyMatched.string ?? '');
         },
       },
     ]);

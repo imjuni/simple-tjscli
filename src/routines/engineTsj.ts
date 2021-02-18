@@ -1,14 +1,13 @@
 import chalk from 'chalk';
 import debug from 'debug';
-import { isNotEmpty } from 'my-easy-fp';
 import * as TEI from 'fp-ts/Either';
+import { isNotEmpty } from 'my-easy-fp';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
 import { extractJSONSchemaByTSJ } from './extractJSONSchemaByTSJ';
 import { formatLoad } from './formatLoad';
 import { interfaceLoad } from './interfaceLoad';
 import { projectLoad } from './projectLoad';
 import { sourceFileLoad } from './sourceFileLoad';
-import { left } from 'inquirer/lib/utils/readline';
 
 const log = debug('tjscli:engineTsj');
 

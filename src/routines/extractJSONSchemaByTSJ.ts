@@ -33,15 +33,14 @@ export async function extractJSONSchemaByTSJ({
   format: string | undefined;
 }): Promise<TEI.Either<Error, boolean>> {
   try {
-    const resolvedTsconfig = path.resolve(path.join(option.cwd, option.project));
     const writeFile = util.promisify(fs.writeFile);
 
     log('Project Path: ', option.project);
-    log('A: ', resolvedTsconfig);
+    log('A: ', option.project);
 
     log('B: ', {
       path: path.join(option.cwd, target.file),
-      tsconfig: resolvedTsconfig,
+      tsconfig: option.project,
       type: target.type,
       expose: option.expose ?? 'export',
       jsDoc: option.jsDoc ?? 'extended',
@@ -53,7 +52,7 @@ export async function extractJSONSchemaByTSJ({
 
     const generator = TSJ.createGenerator({
       path: path.join(option.cwd, target.file),
-      tsconfig: resolvedTsconfig,
+      tsconfig: option.project,
       type: target.type,
       expose: option.expose ?? 'export',
       jsDoc: option.jsDoc ?? 'extended',

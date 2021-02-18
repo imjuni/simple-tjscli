@@ -1,6 +1,6 @@
 {
   "name": "simple-tjscli",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "script": "DEBUG=tjscli:* TS_NODE_FILES=true TS_NODE_PROJECT=./tsconfig.prod.json ts-node ./src/tjscli.ts",
@@ -72,7 +72,7 @@
     "luxon": "^1.22.2",
     "my-easy-fp": "^0.6.0",
     "prettier": "^2.1.2",
-    "ts-json-schema-generator": "^0.82.0",
+    "ts-json-schema-generator": "^0.86.1",
     "ts-node": "^8.8.1",
     "tslib": "1.11.1",
     "typescript": "^4.1.3",

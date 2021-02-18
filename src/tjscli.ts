@@ -1,9 +1,11 @@
 import chalk from 'chalk';
 import debug from 'debug';
 import * as TEI from 'fp-ts/Either';
+import { isFalse } from 'my-easy-fp';
 import * as path from 'path';
 import yargs, { Argv } from 'yargs';
 import { ITjsCliOption } from './interfaces/ITjsCliOption';
+import { existsSync } from './routines/aexists';
 import { configFileLoad } from './routines/configFileLoad';
 import { engineTjs } from './routines/engineTjs';
 import { engineTsj } from './routines/engineTsj';
@@ -49,10 +51,23 @@ const argv = yargs
         const cwd = args.cwd ?? process.cwd();
         const configLoaded = await configFileLoad({ cwd });
         const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
+        const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+
+        if (isFalse(existsSync(path.resolve(project)))) {
+          console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
+          process.exit(1);
+        }
+
+        // Change working directory path
+        const resolvedProject = path.resolve(project);
+        const tsconfigPath = path.resolve(path.dirname(project));
+        process.chdir(tsconfigPath);
+
+        log('Path-1: ', project, tsconfigPath, resolvedProject);
 
         const option: ITjsCliOption = {
           engine: 'tsj',
-          project: process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json'),
+          project: resolvedProject,
           files: args.files ?? config.files ?? [],
           types: args.types ?? config.types ?? [],
           output: args.output ?? config.output ?? undefined,
@@ -90,10 +105,23 @@ const argv = yargs
       const cwd = args.cwd ?? process.cwd();
       const configLoaded = await configFileLoad({ cwd });
       const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
+      const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+
+      if (isFalse(existsSync(path.resolve(project)))) {
+        console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
+        process.exit(1);
+      }
+
+      // Change working directory path
+      const resolvedProject = path.resolve(project);
+      const tsconfigPath = path.resolve(path.dirname(project));
+      process.chdir(tsconfigPath);
+
+      log('Path-2: ', project, tsconfigPath, path.resolve(project));
 
       const option: ITjsCliOption = {
         engine: 'tjs',
-        project: process.env.TS_NODE_PROJECT ?? path.join(process.cwd(), 'tsconfig.json'),
+        project: resolvedProject,
         files: args.files ?? config.files ?? [],
         types: args.types ?? config.types ?? [],
         output: args.output ?? config.output ?? undefined,

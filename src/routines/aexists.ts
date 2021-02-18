@@ -1,13 +1,19 @@
-import { access } from 'fs';
+import fs from 'fs';
 
-export function aexists(filepath: string): Promise<boolean> {
-  return new Promise((resolve, reject) => {
-    access(filepath, (err) => {
-      if (err) {
-        return reject(false);
-      }
+export async function aexists(filepath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filepath);
+    return true;
+  } catch (err) {
+    return false;
+  }
+}
 
-      return resolve(true);
-    });
-  });
+export function existsSync(filepath: string): boolean {
+  try {
+    fs.accessSync(filepath);
+    return true;
+  } catch (err) {
+    return false;
+  }
 }
