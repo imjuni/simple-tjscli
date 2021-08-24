@@ -179,6 +179,6 @@ const argv = yargs
   })
   .help().argv;
 
-log('테스트: ', argv.filenames);
-log('테스트: ', argv.interfaces);
+log('테스트: ', 'filenames' in argv ? argv.files : 'empty');
+log('테스트: ', argv);
 log('테스트: ', process.env.DEBUG);
