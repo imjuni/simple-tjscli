@@ -30,7 +30,7 @@ export async function prettierProcessing({
             .replace(/\%\{\{SCHEMA_JSON_CONTENT\}\}\%/g, contents)
         : `// tslint:disable-next-line variable-name\nexport const ${filename} = ${contents}`;
 
-    const prettierOption = await prettier.resolveConfig(option.cwd);
+    const prettierOption = await prettier.resolveConfig(option.cwd, { editorconfig: true });
     const prettiered = prettier.format(
       processed,
       prettierOption === null
@@ -46,6 +46,11 @@ export async function prettierProcessing({
 
     return TEI.right(prettiered);
   } catch (err) {
-    return TEI.left(err as Error);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
+
+    log(refined.message);
+    log(refined.stack);
+
+    return TEI.left(refined);
   }
 }

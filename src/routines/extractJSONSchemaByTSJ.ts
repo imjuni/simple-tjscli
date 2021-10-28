@@ -95,11 +95,12 @@ export async function extractJSONSchemaByTSJ({
 
     return TEI.right(true);
   } catch (err) {
-    log(err.message);
-    log(err.stack);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
+    const newError = new Error(`[${target.file}/${target.type}]${refined.message}`);
 
-    err.message = `[${target.file}/${target.type}]${err.message}`;
+    log(refined.message);
+    log(refined.stack);
 
-    return TEI.left(err as Error);
+    return TEI.left(newError);
   }
 }

@@ -1,7 +1,7 @@
 {
   engine: 'tsj',
 
-  // current working directory 
+  // current working directory
   cwd: '.',
 
   // tsconfig path
@@ -20,11 +20,9 @@
   extraTags: ['dateformatex'],
 
   // formatContent
-  format: "import { jsc } from 'jsonschema-type';\\n\
+  format: `/* eslint-disable @typescript-eslint/naming-convention */
+import { JSONSchema7 } from 'json-schema';\n\n\
+const JSC_%{{TYPE_NAME}}%: JSONSchema7 = %{{SCHEMA_JSON_CONTENT}}%;\\n\
 \\n\
-// tslint:disable max-line-length\\n\
-// tslint:disable-next-line:variable-name\\n\
-const JSC_%{{TYPE_NAME}}%: jsc.IObjectSchema = %{{SCHEMA_JSON_CONTENT}}%;\\n\
-\\n\
-export default JSC_%{{TYPE_NAME}}%;"
+export default JSC_%{{TYPE_NAME}}%;`,
 }

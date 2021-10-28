@@ -61,13 +61,7 @@ export async function extractJSONSchemaByTJS({
 
     const contents =
       fileType === 'ts'
-        ? await prettierProcessing({
-            format,
-            filename: target.type,
-            target,
-            contents: schemaJSON,
-            option,
-          })
+        ? await prettierProcessing({ format, filename: target.type, target, contents: schemaJSON, option })
         : TEI.right(schemaJSON);
 
     if (TEI.isLeft(contents)) {
@@ -81,9 +75,11 @@ export async function extractJSONSchemaByTJS({
 
     return TEI.right(true);
   } catch (err) {
-    log(err.message);
-    log(err.stack);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
 
-    return TEI.left(err as Error);
+    log(refined.message);
+    log(refined.stack);
+
+    return TEI.left(refined);
   }
 }

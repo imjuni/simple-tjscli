@@ -50,8 +50,10 @@ async function prompt({ cwd }: { cwd: string }) {
 
     return [answer.tsfile];
   } catch (err) {
-    log('Error occured: ', err.message);
-    log('Error occured: ', err.stack);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
+
+    log('Error occured: ', refined.message);
+    log('Error occured: ', refined.stack);
 
     return [];
   }

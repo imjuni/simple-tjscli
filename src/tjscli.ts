@@ -12,7 +12,6 @@ import { engineTsj } from './routines/engineTsj';
 
 const log = debug('tjscli:cli');
 
-// tslint:disable-next-line
 const argv = yargs
   .command<ITjsCliOption>({
     command: '$0 [cwds...]',
@@ -90,8 +89,10 @@ const argv = yargs
 
         log('entered-tsj: ', option);
       } catch (err) {
+        const refined = err instanceof Error ? err : new Error('unknown error raised')
+
         console.log(chalk.red('Error caused: '));
-        console.log(err.message);
+        console.log(refined.message);
       }
     },
   })
@@ -102,44 +103,51 @@ const argv = yargs
       return _args;
     },
     handler: async (args) => {
-      const cwd = args.cwd ?? process.cwd();
-      const configLoaded = await configFileLoad({ cwd });
-      const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
-      const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+      try {
+        const cwd = args.cwd ?? process.cwd();
+        const configLoaded = await configFileLoad({ cwd });
+        const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
+        const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+  
+        if (isFalse(existsSync(path.resolve(project)))) {
+          console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
+          process.exit(1);
+        }
+  
+        // Change working directory path
+        const resolvedProject = path.resolve(project);
+        const tsconfigPath = path.resolve(path.dirname(project));
+        process.chdir(tsconfigPath);
+  
+        log('Path-2: ', project, tsconfigPath, path.resolve(project));
+  
+        const option: ITjsCliOption = {
+          engine: 'tjs',
+          project: resolvedProject,
+          files: args.files ?? config.files ?? [],
+          types: args.types ?? config.types ?? [],
+          output: args.output ?? config.output ?? undefined,
+          outputType: args.outputType ?? config.outputType ?? 'ts',
+          prefix: args.prefix ?? config.prefix ?? 'JSC_',
+          formatPath: args.formatPath ?? config.formatPath ?? undefined,
+          additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
+          topRef: args.topRef ?? config.topRef ?? false,
+          cwd: args.cwd ?? config.cwd ?? process.cwd(),
+        };
+  
+        const result = await engineTjs(config.format, option);
+  
+        if (TEI.isLeft(result)) {
+          console.log(chalk.red('Error: ', result.left.message));
+        }
+  
+        log('entered-tjs: ', option);
+      } catch (err) {
+        const refined = err instanceof Error ? err : new Error('unknown error raised')
 
-      if (isFalse(existsSync(path.resolve(project)))) {
-        console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
-        process.exit(1);
+        console.log(chalk.red('Error caused: '));
+        console.log(refined.message);
       }
-
-      // Change working directory path
-      const resolvedProject = path.resolve(project);
-      const tsconfigPath = path.resolve(path.dirname(project));
-      process.chdir(tsconfigPath);
-
-      log('Path-2: ', project, tsconfigPath, path.resolve(project));
-
-      const option: ITjsCliOption = {
-        engine: 'tjs',
-        project: resolvedProject,
-        files: args.files ?? config.files ?? [],
-        types: args.types ?? config.types ?? [],
-        output: args.output ?? config.output ?? undefined,
-        outputType: args.outputType ?? config.outputType ?? 'ts',
-        prefix: args.prefix ?? config.prefix ?? 'JSC_',
-        formatPath: args.formatPath ?? config.formatPath ?? undefined,
-        additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
-        topRef: args.topRef ?? config.topRef ?? false,
-        cwd: args.cwd ?? config.cwd ?? process.cwd(),
-      };
-
-      const result = await engineTjs(config.format, option);
-
-      if (TEI.isLeft(result)) {
-        console.log(chalk.red('Error: ', result.left.message));
-      }
-
-      log('entered-tjs: ', option);
     },
   })
   .option('files', {

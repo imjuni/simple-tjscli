@@ -129,6 +129,11 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
 
     return TEI.right(processed);
   } catch (err) {
-    return TEI.left(err as Error);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
+
+    log(refined.message);
+    log(refined.stack);
+
+    return TEI.left(refined);
   }
 }

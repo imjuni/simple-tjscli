@@ -17,6 +17,11 @@ export async function configFileLoad({ cwd }: { cwd: string }): Promise<TEI.Eith
 
     return TEI.right(configObject);
   } catch (err) {
-    return TEI.left(err as Error);
+    const refined = err instanceof Error ? err : new Error('unknown error raised');
+
+    log(refined.message);
+    log(refined.stack);
+
+    return TEI.left(refined);
   }
 }
