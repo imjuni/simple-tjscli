@@ -1,6 +1,6 @@
 {
   "name": "simple-tjscli",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "script": "cross-env DEBUG=tjscli:* TS_NODE_FILES=true TS_NODE_PROJECT=./tsconfig.prod.json ts-node ./src/tjscli.ts",

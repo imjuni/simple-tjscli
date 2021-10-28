@@ -1,6 +1,6 @@
 import debug from 'debug';
 import * as TEI from 'fp-ts/Either';
-import prettier from 'prettier';
+import prettier, { Options } from 'prettier';
 import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
 import { ITjsCliOption } from '../interfaces/ITjsCliOption';
 
@@ -11,7 +11,7 @@ export async function prettierProcessing({
   target,
   filename,
   contents,
-  option,
+  option: tjsCliOption,
 }: {
   target: ICreateSchemaTarget;
   format: string | undefined;
@@ -30,10 +30,9 @@ export async function prettierProcessing({
             .replace(/\%\{\{SCHEMA_JSON_CONTENT\}\}\%/g, contents)
         : `// tslint:disable-next-line variable-name\nexport const ${filename} = ${contents}`;
 
-    const prettierOption = await prettier.resolveConfig(option.cwd, { editorconfig: true });
-    const prettiered = prettier.format(
-      processed,
-      prettierOption === null
+    const rawOption = await prettier.resolveConfig(tjsCliOption.cwd, { editorconfig: true });
+    const option: Options =
+      rawOption === null
         ? {
             singleQuote: true,
             trailingComma: 'all',
@@ -41,8 +40,9 @@ export async function prettierProcessing({
             arrowParens: 'always',
             parser: 'typescript',
           }
-        : prettierOption,
-    );
+        : { ...rawOption, parser: rawOption.parser ?? 'typescript' };
+
+    const prettiered = prettier.format(processed, option);
 
     return TEI.right(prettiered);
   } catch (err) {
