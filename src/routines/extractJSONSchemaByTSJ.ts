@@ -1,16 +1,15 @@
+import { ICreateSchemaTarget } from '@interfaces/ICreateSchemaTarget';
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import prettierProcessing from '@routines/prettierProcessing';
 import chalk from 'chalk';
-import debug from 'debug';
+import consola from 'consola';
+import console from 'console';
 import * as TEI from 'fp-ts/Either';
 import fs from 'fs';
 import { isNotEmpty } from 'my-easy-fp';
 import path from 'path';
 import * as TSJ from 'ts-json-schema-generator';
 import util from 'util';
-import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
-import { ITjsCliOption } from '../interfaces/ITjsCliOption';
-import { prettierProcessing } from './prettierProcessing';
-
-const log = debug('tjscli:extractJSONSchemaByTSJ');
 
 function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option: ITjsCliOption }) {
   if (option.output !== '' && isNotEmpty(option.output)) {
@@ -23,7 +22,7 @@ function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option:
   return outputDir;
 }
 
-export async function extractJSONSchemaByTSJ({
+export default async function extractJSONSchemaByTSJ({
   target,
   option,
   format,
@@ -35,10 +34,10 @@ export async function extractJSONSchemaByTSJ({
   try {
     const writeFile = util.promisify(fs.writeFile);
 
-    log('Project Path: ', option.project);
-    log('A: ', option.project);
+    consola.debug('Project Path: ', option.project);
+    consola.debug('A: ', option.project);
 
-    log('B: ', {
+    consola.debug('B: ', {
       path: path.join(option.cwd, target.file),
       tsconfig: option.project,
       type: target.type,
@@ -62,7 +61,7 @@ export async function extractJSONSchemaByTSJ({
       additionalProperties: option.additionalProperties ?? false,
     });
 
-    log('topRef: ', option.topRef ?? false);
+    consola.debug('topRef: ', option.topRef ?? false);
 
     const schema = generator.createSchema(target.type);
     const schemaJSON = JSON.stringify(schema, null, 2);
@@ -70,8 +69,8 @@ export async function extractJSONSchemaByTSJ({
     const fileType = option.outputType;
     const filename = `${option.prefix ?? ''}${target.type}.${fileType}`;
 
-    log('format: ', format);
-    log(`type: ${option.outputType} / dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
+    consola.debug('format: ', format);
+    consola.debug(`type: ${option.outputType} / dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
 
     const contents =
       fileType === 'ts'
@@ -94,12 +93,11 @@ export async function extractJSONSchemaByTSJ({
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
     return TEI.right(true);
-  } catch (err) {
-    const refined = err instanceof Error ? err : new Error('unknown error raised');
-    const newError = new Error(`[${target.file}/${target.type}]${refined.message}`);
+  } catch (catched) {
+    const err = catched instanceof Error ? catched : new Error('unknown error raised');
+    const newError = new Error(`[${target.file}/${target.type}]${err.message}`);
 
-    log(refined.message);
-    log(refined.stack);
+    consola.debug(newError);
 
     return TEI.left(newError);
   }

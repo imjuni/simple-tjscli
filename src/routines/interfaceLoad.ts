@@ -1,33 +1,32 @@
-import debug from 'debug';
+import { ICreateSchemaTarget } from '@interfaces/ICreateSchemaTarget';
+import { IPromptAnswerSelectType } from '@interfaces/IPrompt';
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import consola from 'consola';
+import * as TEI from 'fp-ts/Either';
 import * as fs from 'fs';
 import inquirer from 'inquirer';
 import * as path from 'path';
 import typescript from 'typescript';
-import * as TEI from 'fp-ts/Either';
-import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
-import { IPromptAnswerSelectType } from '../interfaces/IPrompt';
-import { ITjsCliOption } from '../interfaces/ITjsCliOption';
 
-const log = debug('tjscli:interfaceload');
+function anyCasting<T>(node: typescript.Node): T {
+  return node as any as T;
+}
 
-async function delintNode({
-  file,
-  source: node,
-}: {
-  file: string;
-  source: typescript.Node;
-}): Promise<ICreateSchemaTarget[]> {
+async function delintNode({ file, source }: { file: string; source: typescript.Node }): Promise<ICreateSchemaTarget[]> {
   const interfaceNames: string[] = [];
   const typeAliasNames: string[] = [];
 
-  const nodeWalk = (_node: typescript.Node) => {
-    switch (_node.kind) {
+  const nodeWalk = (node: typescript.Node) => {
+    let interfaceDeclaration: typescript.InterfaceDeclaration;
+    let typeAliasDeclaration: typescript.TypeAliasDeclaration;
+
+    switch (node.kind) {
       case typescript.SyntaxKind.InterfaceDeclaration:
-        const interfaceDeclaration: typescript.InterfaceDeclaration = _node as any;
+        interfaceDeclaration = anyCasting(node);
         interfaceNames.push(interfaceDeclaration.name.escapedText as string);
         break;
       case typescript.SyntaxKind.TypeAliasDeclaration:
-        const typeAliasDeclaration: typescript.TypeAliasDeclaration = _node as any;
+        typeAliasDeclaration = anyCasting(node);
         typeAliasNames.push(typeAliasDeclaration.name.escapedText as string);
         break;
       case typescript.SyntaxKind.ForInStatement:
@@ -36,12 +35,14 @@ async function delintNode({
       case typescript.SyntaxKind.IfStatement:
       case typescript.SyntaxKind.BinaryExpression:
         break;
+      default:
+        break;
     }
 
-    typescript.forEachChild(_node, nodeWalk);
+    typescript.forEachChild(node, nodeWalk);
   };
 
-  nodeWalk(node);
+  nodeWalk(source);
 
   const interfaceTargets: ICreateSchemaTarget[] = interfaceNames.map((interfaceName) => ({
     type: interfaceName,
@@ -61,8 +62,7 @@ async function delintNode({
 async function prompt({ types }: { types: ICreateSchemaTarget[] }) {
   const typeNames = types.map((typeName) => typeName.type);
   const typeMap = types.reduce<{ [key: string]: ICreateSchemaTarget }>((aggregation, current) => {
-    aggregation[current.type] = current;
-    return aggregation;
+    return { ...aggregation, [current.type]: current };
   }, {});
 
   const answer = await inquirer.prompt<IPromptAnswerSelectType>([
@@ -95,7 +95,7 @@ function optionLoad({ interfaces, option }: { interfaces: ICreateSchemaTarget[];
   }
 }
 
-export async function interfaceLoad({ files, option }: { files: string[]; option: ITjsCliOption }) {
+export default async function interfaceLoad({ files, option }: { files: string[]; option: ITjsCliOption }) {
   try {
     const sourceFiles = await Promise.all(
       files.map((file) =>
@@ -125,15 +125,13 @@ export async function interfaceLoad({ files, option }: { files: string[]; option
 
     const processed = usingPrompt ? await prompt({ types }) : optionLoad({ interfaces: types, option });
 
-    log('types: ', processed);
+    consola.debug('types: ', processed);
 
     return TEI.right(processed);
-  } catch (err) {
-    const refined = err instanceof Error ? err : new Error('unknown error raised');
+  } catch (catched) {
+    const err = catched instanceof Error ? catched : new Error('unknown error raised');
+    consola.debug(err);
 
-    log(refined.message);
-    log(refined.stack);
-
-    return TEI.left(refined);
+    return TEI.left(err);
   }
 }

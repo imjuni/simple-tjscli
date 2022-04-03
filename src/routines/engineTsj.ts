@@ -1,17 +1,16 @@
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import extractJSONSchemaByTSJ from '@routines/extractJSONSchemaByTSJ';
+import formatLoad from '@routines/formatLoad';
+import interfaceLoad from '@routines/interfaceLoad';
+import projectLoad from '@routines/projectLoad';
+import sourceFileLoad from '@routines/sourceFileLoad';
 import chalk from 'chalk';
-import debug from 'debug';
+import consola from 'consola';
+import console from 'console';
 import * as TEI from 'fp-ts/Either';
 import { isNotEmpty } from 'my-easy-fp';
-import { ITjsCliOption } from '../interfaces/ITjsCliOption';
-import { extractJSONSchemaByTSJ } from './extractJSONSchemaByTSJ';
-import { formatLoad } from './formatLoad';
-import { interfaceLoad } from './interfaceLoad';
-import { projectLoad } from './projectLoad';
-import { sourceFileLoad } from './sourceFileLoad';
 
-const log = debug('tjscli:engineTsj');
-
-export async function engineTsj(formatFromConfig: string | undefined, option: ITjsCliOption) {
+export default async function engineTsj(formatFromConfig: string | undefined, option: ITjsCliOption) {
   const format =
     formatFromConfig ??
     (isNotEmpty(option.formatPath) ? await formatLoad({ cwd: option.cwd, format: option.formatPath }) : undefined);
@@ -39,10 +38,10 @@ export async function engineTsj(formatFromConfig: string | undefined, option: IT
 
   console.log(chalk.green('Type: ', interfaces.right.map((interfaceInfo) => interfaceInfo.type).join(', ')));
 
-  log('foramt: ', format);
-  log('proejct: ', option.cwd, project.right);
-  log('sources: ', sources.right);
-  log('interfaces: ', interfaces.right);
+  consola.debug('foramt: ', format);
+  consola.debug('proejct: ', option.cwd, project.right);
+  consola.debug('sources: ', sources.right);
+  consola.debug('interfaces: ', interfaces.right);
 
   const results = await Promise.all(
     interfaces.right.map((target) => extractJSONSchemaByTSJ({ target, option, format })),

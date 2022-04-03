@@ -1,22 +1,26 @@
-import chalk from 'chalk';
-import debug from 'debug';
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import configFileLoad from '@routines/configFileLoad';
+import engineTjs from '@routines/engineTjs';
+import engineTsj from '@routines/engineTsj';
+import consola, { LogLevel } from 'consola';
 import * as TEI from 'fp-ts/Either';
 import { isFalse } from 'my-easy-fp';
+import { existsSync } from 'my-node-fp';
 import * as path from 'path';
-import yargs, { Argv } from 'yargs';
-import { ITjsCliOption } from './interfaces/ITjsCliOption';
-import { existsSync } from './routines/aexists';
-import { configFileLoad } from './routines/configFileLoad';
-import { engineTjs } from './routines/engineTjs';
-import { engineTsj } from './routines/engineTsj';
+import yargsAnyType, { Argv } from 'yargs';
 
-const log = debug('tjscli:cli');
+// Yargs default type using object type(= {}). But object type cause error that
+// fast-maker cli option interface type. So we make concrete type yargs instance
+// make using by any type.
+const yargs: Argv<ITjsCliOption> = yargsAnyType as any;
+consola.level = LogLevel.Success;
 
-const argv = yargs
+// eslint-disable-next-line
+const argv = yargs(process.argv.slice(2))
   .command<ITjsCliOption>({
     command: '$0 [cwds...]',
     aliases: 'tsj [cwds...]',
-    builder: (args: Argv<{}>) => {
+    builder: (args: Argv<ITjsCliOption>) => {
       args.option('extraTags', {
         alias: 'a',
         describe: 'TJS option extraTags',
@@ -41,9 +45,7 @@ const argv = yargs
         type: 'boolean',
       });
 
-      const _args: any = args;
-
-      return _args;
+      return args;
     },
     handler: async (args) => {
       try {
@@ -53,7 +55,7 @@ const argv = yargs
         const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
 
         if (isFalse(existsSync(path.resolve(project)))) {
-          console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
+          consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
           process.exit(1);
         }
 
@@ -62,7 +64,7 @@ const argv = yargs
         const tsconfigPath = path.resolve(path.dirname(project));
         process.chdir(tsconfigPath);
 
-        log('Path-1: ', project, tsconfigPath, resolvedProject);
+        consola.debug('Path-1: ', project, tsconfigPath, resolvedProject);
 
         const option: ITjsCliOption = {
           engine: 'tsj',
@@ -84,43 +86,39 @@ const argv = yargs
         const result = await engineTsj(config.format, option);
 
         if (TEI.isLeft(result)) {
-          console.log(chalk.red('Error: ', result.left.message));
+          consola.error(result.left);
+          process.exit(1);
         }
 
-        log('entered-tsj: ', option);
-      } catch (err) {
-        const refined = err instanceof Error ? err : new Error('unknown error raised')
-
-        console.log(chalk.red('Error caused: '));
-        console.log(refined.message);
+        consola.debug('entered-tsj: ', option);
+      } catch (catched) {
+        const err = catched instanceof Error ? catched : new Error('unknown error raised');
+        consola.error(err);
       }
     },
   })
   .command<ITjsCliOption>({
     command: 'tjs [cwds...]',
-    builder: (args: Argv<{}>) => {
-      const _args: any = args;
-      return _args;
-    },
+    builder: (args: Argv<ITjsCliOption>) => args,
     handler: async (args) => {
       try {
         const cwd = args.cwd ?? process.cwd();
         const configLoaded = await configFileLoad({ cwd });
         const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
         const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
-  
+
         if (isFalse(existsSync(path.resolve(project)))) {
-          console.log(chalk.red(`Error: invalid tsconfig path - ${project}`));
+          consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
           process.exit(1);
         }
-  
+
         // Change working directory path
         const resolvedProject = path.resolve(project);
         const tsconfigPath = path.resolve(path.dirname(project));
         process.chdir(tsconfigPath);
-  
-        log('Path-2: ', project, tsconfigPath, path.resolve(project));
-  
+
+        consola.debug('Path-2: ', project, tsconfigPath, path.resolve(project));
+
         const option: ITjsCliOption = {
           engine: 'tjs',
           project: resolvedProject,
@@ -134,19 +132,18 @@ const argv = yargs
           topRef: args.topRef ?? config.topRef ?? false,
           cwd: args.cwd ?? config.cwd ?? process.cwd(),
         };
-  
-        const result = await engineTjs(config.format, option);
-  
-        if (TEI.isLeft(result)) {
-          console.log(chalk.red('Error: ', result.left.message));
-        }
-  
-        log('entered-tjs: ', option);
-      } catch (err) {
-        const refined = err instanceof Error ? err : new Error('unknown error raised')
 
-        console.log(chalk.red('Error caused: '));
-        console.log(refined.message);
+        const result = await engineTjs(config.format, option);
+
+        if (TEI.isLeft(result)) {
+          consola.error(result.left);
+          process.exit(1);
+        }
+
+        consola.debug('entered-tjs: ', option);
+      } catch (catched) {
+        const err = catched instanceof Error ? catched : new Error('unknown error raised');
+        consola.error(err);
       }
     },
   })
@@ -187,6 +184,6 @@ const argv = yargs
   })
   .help().argv;
 
-log('테스트: ', 'filenames' in argv ? argv.files : 'empty');
-log('테스트: ', argv);
-log('테스트: ', process.env.DEBUG);
+consola.debug('테스트: ', 'filenames' in argv ? argv.files : 'empty');
+consola.debug('테스트: ', argv);
+consola.debug('테스트: ', process.env.DEBUG);

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import util from 'util';
 
-export async function formatLoad({
+export default async function formatLoad({
   cwd,
   format: formatPath,
 }: {

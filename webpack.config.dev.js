@@ -14,19 +14,19 @@ const config = {
   ],
   mode: 'development',
   target: 'node',
-  
-  cache: {
-    // 1. Set cache type to filesystem
-    type: 'filesystem',
 
-    buildDependencies: {
-      // 2. Add your config as buildDependency to get cache invalidation on config change
-      config: [__filename],
+  // cache: {
+  //   // 1. Set cache type to filesystem
+  //   type: 'filesystem',
 
-      // 3. If you have other things the build depends on you can add them here
-      // Note that webpack, loaders and all modules referenced from your config are automatically added
-    },
-  },
+  //   buildDependencies: {
+  //     // 2. Add your config as buildDependency to get cache invalidation on config change
+  //     config: [__filename],
+
+  //     // 3. If you have other things the build depends on you can add them here
+  //     // Note that webpack, loaders and all modules referenced from your config are automatically added
+  //   },
+  // },
 
   resolve: {
     fallback: {
@@ -39,19 +39,17 @@ const config = {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     plugins: [
-      new webpack.BannerPlugin({ banner: "#!/usr/bin/env node", raw: true }),
+      new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
       new tsconfigPathsWebpackPlugin({
         configFile: 'tsconfig.json',
       }),
     ],
   },
 
-  plugins: [
-    new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
-  ],
+  plugins: [new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true })],
 
   entry: {
-    'tjscli': ['./src/tjscli.ts'],
+    tjscli: ['./src/tjscli.ts'],
   },
 
   output: {
@@ -76,8 +74,8 @@ const config = {
         loader: 'ts-loader',
         test: /\.tsx?$/,
         options: {
-          configFile: 'tsconfig.json'
-        }
+          configFile: 'tsconfig.json',
+        },
       },
     ],
   },

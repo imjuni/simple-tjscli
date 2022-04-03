@@ -1,12 +1,10 @@
-import debug from 'debug';
+import { ICreateSchemaTarget } from '@interfaces/ICreateSchemaTarget';
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import consola from 'consola';
 import * as TEI from 'fp-ts/Either';
 import prettier, { Options } from 'prettier';
-import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
-import { ITjsCliOption } from '../interfaces/ITjsCliOption';
 
-const log = debug('tjscli:prettierProcessing');
-
-export async function prettierProcessing({
+export default async function prettierProcessing({
   format,
   target,
   filename,
@@ -20,14 +18,14 @@ export async function prettierProcessing({
   option: ITjsCliOption;
 }) {
   try {
-    log('processed: ', format);
+    consola.debug('processed: ', format);
 
     const processed =
       format !== undefined
         ? format
             .replace(/\\n/g, '\n')
-            .replace(/\%\{\{TYPE_NAME\}\}\%/g, target.type)
-            .replace(/\%\{\{SCHEMA_JSON_CONTENT\}\}\%/g, contents)
+            .replace(/%\{\{TYPE_NAME\}\}%/g, target.type)
+            .replace(/%\{\{SCHEMA_JSON_CONTENT\}\}%/g, contents)
         : `// tslint:disable-next-line variable-name\nexport const ${filename} = ${contents}`;
 
     const rawOption = await prettier.resolveConfig(tjsCliOption.cwd, { editorconfig: true });
@@ -45,12 +43,10 @@ export async function prettierProcessing({
     const prettiered = prettier.format(processed, option);
 
     return TEI.right(prettiered);
-  } catch (err) {
-    const refined = err instanceof Error ? err : new Error('unknown error raised');
+  } catch (catched) {
+    const err = catched instanceof Error ? catched : new Error('unknown error raised');
+    consola.debug(err);
 
-    log(refined.message);
-    log(refined.stack);
-
-    return TEI.left(refined);
+    return TEI.left(err);
   }
 }

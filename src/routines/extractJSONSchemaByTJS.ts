@@ -1,17 +1,16 @@
+import { ICreateSchemaTarget } from '@interfaces/ICreateSchemaTarget';
+import { ITjsCliOption } from '@interfaces/ITjsCliOption';
+import prettierProcessing from '@routines/prettierProcessing';
 import chalk from 'chalk';
-import debug from 'debug';
+import consola from 'consola';
+import console from 'console';
+import * as TEI from 'fp-ts/Either';
 import fs from 'fs';
 import { isNotEmpty } from 'my-easy-fp';
-import * as TEI from 'fp-ts/Either';
 import path from 'path';
-import typescript, { textSpanIsEmpty } from 'typescript';
+import typescript from 'typescript';
 import * as TJS from 'typescript-json-schema';
 import util from 'util';
-import { ICreateSchemaTarget } from '../interfaces/ICreateSchemaTarget';
-import { ITjsCliOption } from '../interfaces/ITjsCliOption';
-import { prettierProcessing } from './prettierProcessing';
-
-const log = debug('tjscli:extractJSONSchemaByTJS');
 
 function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option: ITjsCliOption }) {
   if (option.output !== '' && isNotEmpty(option.output)) {
@@ -24,7 +23,7 @@ function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option:
   return outputDir;
 }
 
-export async function extractJSONSchemaByTJS({
+export default async function extractJSONSchemaByTJS({
   target,
   option,
   format,
@@ -56,8 +55,8 @@ export async function extractJSONSchemaByTJS({
     const fileType = option.outputType;
     const filename = `${option.prefix ?? ''}${target.type}.${fileType}`;
 
-    log(format);
-    log(`type: ${option.outputType} / dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
+    consola.debug(format);
+    consola.debug(`type: ${option.outputType} / dd: ${target.file} / dir: ${outputDir} / file: ${filename}`);
 
     const contents =
       fileType === 'ts'
@@ -74,12 +73,10 @@ export async function extractJSONSchemaByTJS({
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
     return TEI.right(true);
-  } catch (err) {
-    const refined = err instanceof Error ? err : new Error('unknown error raised');
+  } catch (catched) {
+    const err = catched instanceof Error ? catched : new Error('unknown error raised');
+    consola.debug(err);
 
-    log(refined.message);
-    log(refined.stack);
-
-    return TEI.left(refined);
+    return TEI.left(err);
   }
 }

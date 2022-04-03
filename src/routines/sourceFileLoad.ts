@@ -1,15 +1,13 @@
-import debug from 'debug';
+import consola from 'consola';
 import fastGlob from 'fast-glob';
 import * as TEI from 'fp-ts/Either';
 import fuzzy from 'fuzzy';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
 import { isFalse, isTrue } from 'my-easy-fp';
+import { exists } from 'my-node-fp';
 import * as path from 'path';
 import { IPromptAnswerSelectFile } from '../interfaces/IPrompt';
-import { aexists } from './aexists';
-
-const log = debug('tjscli:cli');
 
 async function fileLoad({ cwd, files }: { cwd: string; files: string[] }) {
   const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
@@ -49,24 +47,22 @@ async function prompt({ cwd }: { cwd: string }) {
     ]);
 
     return [answer.tsfile];
-  } catch (err) {
-    const refined = err instanceof Error ? err : new Error('unknown error raised');
-
-    log('Error occured: ', refined.message);
-    log('Error occured: ', refined.stack);
+  } catch (catched) {
+    const err = catched instanceof Error ? catched : new Error('unknown error raised');
+    consola.debug(err);
 
     return [];
   }
 }
 
-export async function sourceFileLoad({ cwd, files }: { cwd: string; files: string[] }) {
+export default async function sourceFileLoad({ cwd, files }: { cwd: string; files: string[] }) {
   const usePrompt = files === undefined || files === null || files.length <= 0;
   const tsfiles = usePrompt ? await prompt({ cwd }) : await fileLoad({ cwd, files });
 
   const isExsits = await Promise.all(
     tsfiles.map((file) =>
       (async () => ({
-        exists: await aexists(file),
+        exists: await exists(file),
         file,
       }))(),
     ),
