@@ -97,6 +97,8 @@ function optionLoad({ interfaces, option }: { interfaces: ICreateSchemaTarget[];
 
 export default async function interfaceLoad({ files, option }: { files: string[]; option: ITjsCliOption }) {
   try {
+    consola.debug('파일: ', files);
+
     const sourceFiles = await Promise.all(
       files.map((file) =>
         (async () => {
@@ -113,8 +115,9 @@ export default async function interfaceLoad({ files, option }: { files: string[]
       ),
     );
 
-    const types = (await Promise.all(sourceFiles.map((sourceFile) => delintNode(sourceFile)))).reduce((prev, current) =>
-      prev.concat(current),
+    const types = (await Promise.all(sourceFiles.map((sourceFile) => delintNode(sourceFile)))).reduce(
+      (prev, current) => prev.concat(current),
+      [],
     );
 
     const usingPrompt = files.length === 1 && option.types.length !== 1 && types.length !== 1;

@@ -5,7 +5,7 @@ import engineTsj from '@routines/engineTsj';
 import consola, { LogLevel } from 'consola';
 import * as TEI from 'fp-ts/Either';
 import { isFalse } from 'my-easy-fp';
-import { existsSync } from 'my-node-fp';
+import { existsSync, getDirname } from 'my-node-fp';
 import * as path from 'path';
 import yargsAnyType, { Argv } from 'yargs';
 
@@ -49,31 +49,48 @@ const argv = yargs(process.argv.slice(2))
     },
     handler: async (args) => {
       try {
+        const verbose = args.verbose ?? false;
+        consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
         const cwd = args.cwd ?? process.cwd();
         const configLoaded = await configFileLoad({ cwd });
         const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
-        const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+        const prefix = args.prefix ?? config.prefix;
+        const project =
+          process.env.TS_NODE_PROJECT ?? args.project ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
 
         if (isFalse(existsSync(path.resolve(project)))) {
           consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
           process.exit(1);
         }
 
+        if (prefix === undefined || prefix === null || prefix === '') {
+          consola.warn(
+            'Prefix option is empty, generated jsonschema file overwrite source file.',
+            'You can recover original file from backup file.',
+          );
+        }
+
         // Change working directory path
         const resolvedProject = path.resolve(project);
-        const tsconfigPath = path.resolve(path.dirname(project));
+        const tsconfigPath = path.resolve(await getDirname(project));
+        const relativePathFiles = (args.files ?? config.files ?? [])
+          .map((file) => path.resolve(file))
+          .map((file) => path.relative(tsconfigPath, file));
+
         process.chdir(tsconfigPath);
 
-        consola.debug('Path-1: ', project, tsconfigPath, resolvedProject);
+        consola.debug('Path-1: ', relativePathFiles, project, tsconfigPath, resolvedProject);
 
         const option: ITjsCliOption = {
           engine: 'tsj',
           project: resolvedProject,
-          files: args.files ?? config.files ?? [],
+          verbose,
+          files: relativePathFiles,
           types: args.types ?? config.types ?? [],
           output: args.output ?? config.output ?? undefined,
           outputType: args.outputType ?? config.outputType ?? 'ts',
-          prefix: args.prefix ?? config.prefix ?? 'JSC_',
+          prefix,
           formatPath: args.formatPath ?? config.formatPath ?? undefined,
           topRef: args.topRef ?? config.topRef ?? false,
           cwd: args.cwd ?? config.cwd ?? process.cwd(),
@@ -102,19 +119,35 @@ const argv = yargs(process.argv.slice(2))
     builder: (args: Argv<ITjsCliOption>) => args,
     handler: async (args) => {
       try {
+        const verbose = args.verbose ?? false;
+        consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
         const cwd = args.cwd ?? process.cwd();
         const configLoaded = await configFileLoad({ cwd });
         const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
-        const project = process.env.TS_NODE_PROJECT ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+        const prefix = args.prefix ?? config.prefix;
+        const project =
+          process.env.TS_NODE_PROJECT ?? args.project ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
 
         if (isFalse(existsSync(path.resolve(project)))) {
           consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
           process.exit(1);
         }
 
+        if (prefix === undefined || prefix === null || prefix === '') {
+          consola.warn(
+            'Prefix option is empty, generated jsonschema file overwrite source file.',
+            'You can recover original file from backup file.',
+          );
+        }
+
         // Change working directory path
         const resolvedProject = path.resolve(project);
-        const tsconfigPath = path.resolve(path.dirname(project));
+        const tsconfigPath = path.resolve(await getDirname(project));
+        const relativePathFiles = (args.files ?? config.files ?? [])
+          .map((file) => path.resolve(file))
+          .map((file) => path.relative(tsconfigPath, file));
+
         process.chdir(tsconfigPath);
 
         consola.debug('Path-2: ', project, tsconfigPath, path.resolve(project));
@@ -122,11 +155,12 @@ const argv = yargs(process.argv.slice(2))
         const option: ITjsCliOption = {
           engine: 'tjs',
           project: resolvedProject,
-          files: args.files ?? config.files ?? [],
+          verbose,
+          files: relativePathFiles,
           types: args.types ?? config.types ?? [],
           output: args.output ?? config.output ?? undefined,
           outputType: args.outputType ?? config.outputType ?? 'ts',
-          prefix: args.prefix ?? config.prefix ?? 'JSC_',
+          prefix,
           formatPath: args.formatPath ?? config.formatPath ?? undefined,
           additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
           topRef: args.topRef ?? config.topRef ?? false,
@@ -181,6 +215,11 @@ const argv = yargs(process.argv.slice(2))
     alias: 'r',
     describe: 'output contents layout',
     type: 'string',
+  })
+  .option('verbose', {
+    alias: 'v',
+    describe: 'verbose message',
+    type: 'boolean',
   })
   .help().argv;
 

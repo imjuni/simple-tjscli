@@ -22,7 +22,7 @@ export default async function engineTsj(formatFromConfig: string | undefined, op
 
   console.log(chalk.green('Project: ', project.right.project));
 
-  const sources = await sourceFileLoad({ cwd: option.cwd, files: option.files });
+  const sources = await sourceFileLoad({ cwd: option.cwd, files: option.files, prefix: option.prefix });
 
   if (TEI.isLeft(sources)) {
     return TEI.left(sources.left);

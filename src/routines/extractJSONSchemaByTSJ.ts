@@ -7,9 +7,9 @@ import console from 'console';
 import * as TEI from 'fp-ts/Either';
 import fs from 'fs';
 import { isNotEmpty } from 'my-easy-fp';
+import { exists, getDirname } from 'my-node-fp';
 import path from 'path';
 import * as TSJ from 'ts-json-schema-generator';
-import util from 'util';
 
 function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option: ITjsCliOption }) {
   if (option.output !== '' && isNotEmpty(option.output)) {
@@ -32,8 +32,6 @@ export default async function extractJSONSchemaByTSJ({
   format: string | undefined;
 }): Promise<TEI.Either<Error, boolean>> {
   try {
-    const writeFile = util.promisify(fs.writeFile);
-
     consola.debug('Project Path: ', option.project);
     consola.debug('A: ', option.project);
 
@@ -88,7 +86,13 @@ export default async function extractJSONSchemaByTSJ({
     }
 
     const outputFilename = path.join(outputDir, filename);
-    await writeFile(outputFilename, contents.right);
+
+    if (await exists(outputFilename)) {
+      const backupFileName = path.join(await getDirname(outputFilename), `${path.basename(outputFilename)}.bak`);
+      await fs.promises.rename(outputFilename, backupFileName);
+    }
+
+    await fs.promises.writeFile(outputFilename, contents.right);
 
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 

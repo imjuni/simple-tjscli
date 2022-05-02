@@ -51,4 +51,7 @@ export interface ITjsCliOption {
 
   /** TSJ generator option */
   additionalProperties: boolean;
+
+  /** verbose message */
+  verbose: boolean;
 }

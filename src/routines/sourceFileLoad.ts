@@ -1,3 +1,4 @@
+import { IPromptAnswerSelectFile } from '@interfaces/IPrompt';
 import consola from 'consola';
 import fastGlob from 'fast-glob';
 import * as TEI from 'fp-ts/Either';
@@ -5,27 +6,48 @@ import fuzzy from 'fuzzy';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';
 import { isFalse, isTrue } from 'my-easy-fp';
-import { exists } from 'my-node-fp';
+import { exists, replaceSepToPosix } from 'my-node-fp';
 import * as path from 'path';
-import { IPromptAnswerSelectFile } from '../interfaces/IPrompt';
 
-async function fileLoad({ cwd, files }: { cwd: string; files: string[] }) {
-  const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
+const globPaths = ['**/*.ts', '!node_modules', '!dist/**', '!artifact/**', '!**/*.d.ts', '!**/__test__'];
+
+interface ISourceFileLoaderParams {
+  cwd: string;
+  files: string[];
+  prefix?: string;
+}
+
+async function fileLoad({ cwd, files, prefix }: ISourceFileLoaderParams) {
+  const posixReplacedFiles = files.map((file) => replaceSepToPosix(file));
+  const tsfiles = await fastGlob(globPaths, { cwd });
+
   const filtered = tsfiles
-    .filter((tsfile) =>
-      files.reduce<boolean>((aggregation, current) => aggregation || tsfile.indexOf(current) >= 0, false),
-    )
-    .filter((tsfile) => !path.basename(tsfile).startsWith('JSC_'));
+    .filter((tsfile) => {
+      return posixReplacedFiles.reduce<boolean>(
+        (aggregation, current) => aggregation || tsfile.indexOf(current) >= 0,
+        false,
+      );
+    })
+    .filter((tsfile) => {
+      if (prefix !== undefined && prefix !== null && prefix !== '') {
+        return !path.basename(tsfile).startsWith(prefix);
+      }
+
+      return true;
+    });
 
   return filtered;
 }
 
-async function prompt({ cwd }: { cwd: string }) {
+async function prompt({ cwd, prefix }: Omit<ISourceFileLoaderParams, 'files'>) {
   try {
     inquirer.registerPrompt('autocomplete', inquirerAutocompletePrompt);
 
-    const tsfiles = await fastGlob(['**/*.ts', '!node_modules', '!artifact/**', '!**/*.d.ts', '!**/__test__'], { cwd });
-    const excludeJSC = tsfiles.filter((file) => isFalse(file.startsWith('JSC_')));
+    const tsfiles = await fastGlob(globPaths, { cwd });
+    const excludeJSC =
+      prefix !== undefined && prefix !== null && prefix !== ''
+        ? tsfiles.filter((file) => isFalse(file.startsWith(prefix)))
+        : tsfiles;
 
     const answer = await inquirer.prompt<IPromptAnswerSelectFile>([
       {
@@ -38,7 +60,7 @@ async function prompt({ cwd }: { cwd: string }) {
 
           return fuzzy
             .filter(safeInput, excludeJSC)
-            .filter((fuzzyMatched) => fuzzyMatched.string.indexOf(`${path.sep}JSC_`) < 0)
+            .filter((fuzzyMatched) => fuzzyMatched.string.indexOf(`${path.sep}${prefix}`) < 0)
             .filter((fuzzyMatched) => fuzzyMatched.score > 0.8)
             .sort((left, right) => right.score - left.score)
             .map((fuzzyMatched) => fuzzyMatched.string ?? '');
@@ -55,9 +77,9 @@ async function prompt({ cwd }: { cwd: string }) {
   }
 }
 
-export default async function sourceFileLoad({ cwd, files }: { cwd: string; files: string[] }) {
+export default async function sourceFileLoad({ cwd, files, prefix }: ISourceFileLoaderParams) {
   const usePrompt = files === undefined || files === null || files.length <= 0;
-  const tsfiles = usePrompt ? await prompt({ cwd }) : await fileLoad({ cwd, files });
+  const tsfiles = usePrompt ? await prompt({ cwd, prefix }) : await fileLoad({ cwd, files, prefix });
 
   const isExsits = await Promise.all(
     tsfiles.map((file) =>

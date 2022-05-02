@@ -7,10 +7,10 @@ import console from 'console';
 import * as TEI from 'fp-ts/Either';
 import fs from 'fs';
 import { isNotEmpty } from 'my-easy-fp';
+import { exists, getDirname } from 'my-node-fp';
 import path from 'path';
 import typescript from 'typescript';
 import * as TJS from 'typescript-json-schema';
-import util from 'util';
 
 function getOutputDir({ target, option }: { target: ICreateSchemaTarget; option: ITjsCliOption }) {
   if (option.output !== '' && isNotEmpty(option.output)) {
@@ -33,12 +33,9 @@ export default async function extractJSONSchemaByTJS({
   format: string | undefined;
 }) {
   try {
-    const writeFile = util.promisify(fs.writeFile);
-    const readFile = util.promisify(fs.readFile);
-
     const compilerOptions = typescript.parseConfigFileTextToJson(
       option.project,
-      (await readFile(option.project)).toString(),
+      (await fs.promises.readFile(option.project)).toString(),
     );
 
     const settings: TJS.PartialArgs = {
@@ -68,7 +65,13 @@ export default async function extractJSONSchemaByTJS({
     }
 
     const outputFilename = path.join(outputDir, filename);
-    await writeFile(outputFilename, contents.right);
+
+    if (await exists(outputFilename)) {
+      const backupFileName = path.join(await getDirname(outputFilename), `${path.basename(outputFilename)}.bak`);
+      await fs.promises.rename(outputFilename, backupFileName);
+    }
+
+    await fs.promises.writeFile(outputFilename, contents.right);
 
     console.log(chalk.green('Write JSONSchema: ', outputFilename));
 
