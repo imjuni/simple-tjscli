@@ -63,3 +63,6 @@ artifact/
 
 # Exclude registry congiruation
 .npmrc
+notes
+notes/**
+example/output/**

@@ -1,0 +1,13 @@
+{
+  "topRef": false,
+  "sync": true,
+  "expose": "all",
+  "seperateDefinitions": true,
+  "outputType": "ts",
+  "output": "../output",
+  "project": "./tsconfig.json",
+  "extraTags": [
+    "dateformatex"
+  ],
+  "template": "import { JSONSchema7 } from 'json-schema';\n \n const %{{VARIABLE_NAME}}%: JSONSchema7 = %{{JSON_SCHEMA_CONTENT}}%;\n\n\nexport default %{{VARIABLE_NAME}}%;\n"
+}

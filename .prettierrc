@@ -22,6 +22,15 @@
       "options": {
         "parser": "json"
       }
+    },
+    {
+      "files": [
+        ".vscode/launch.json",
+        ".vscode/settings.json"
+      ],
+      "options": {
+        "parser": "json"
+      }
     }
   ]
 }

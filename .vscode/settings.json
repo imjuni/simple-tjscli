@@ -15,7 +15,8 @@
     "**/build": true
   },
   "files.associations": {
-    ".tjsclirc": "json5"
+    ".tjsclirc": "json",
+    ".vscode/launch.json": "json"
   },
   "files.watcherExclude": {
     "**/.git/objects/**": true,
@@ -24,9 +25,11 @@
     "**/build": true,
     "**/dist": true
   },
- "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.tsdk": "node_modules/typescript/lib",
   "[typescript]": {
     "editor.formatOnSave": true
   },
-  "git.ignoreLimitWarning": true
- }
+  "git.ignoreLimitWarning": true,
+  "jest.jestCommandLine": ".\\node_modules\\.bin\\jest --config ./.config/jest.config.js",
+  "jest.rootPath": "."
+}
