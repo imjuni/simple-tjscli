@@ -1,228 +1,293 @@
-import { ITjsCliOption } from '@interfaces/ITjsCliOption';
-import configFileLoad from '@routines/configFileLoad';
-import engineTjs from '@routines/engineTjs';
-import engineTsj from '@routines/engineTsj';
+import getFileNameFromCli from '@cli/getFileNameFromCli';
+import getTypeNameFromCli from '@cli/getTypeNameFromCli';
+import getAllExportTypes from '@compiler/getAllExportedTypes';
+import getExportedTypes from '@compiler/getExportedTypes';
+import getSourceFiles from '@compiler/getSourceFiles';
+import getTsProject from '@compiler/getTsProject';
+import IResolvePath from '@config/interfaces/IResolvePath';
+import ITjsOption from '@config/interfaces/ITjsOption';
+import ITsjOption from '@config/interfaces/ITsjOption';
+import aggregateDefinitions from '@modules/aggregateDefinitions';
+import applyFormat from '@modules/applyFormat';
+import applyPrettier from '@modules/applyPrettier';
+import generateJSONSchemaByTJS from '@modules/generateJSONSchemaByTJS';
+import generateJSONSchemaByTSJ from '@modules/generateJSONSchemaByTSJ';
+import getDefinitions from '@modules/getDefinitions';
+import getOutputSchemaFile from '@modules/getOutputSchemaFile';
+import IGeneratedJSONSchemaFromTJS from '@modules/interfaces/IGeneratedJSONSchemaFromTJS';
+import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
+import TOutputJSONSchema from '@modules/interfaces/TOutputJSONSchema';
+import loadTemplate from '@modules/loadTemplate';
+import moveTopRef from '@modules/moveTopRef';
+import writeDefinitionModule from '@modules/writeDefinitionModule';
+import writeSchema from '@modules/writeSchema';
+import chokidar from 'chokidar';
 import consola, { LogLevel } from 'consola';
-import * as TEI from 'fp-ts/Either';
-import { isFalse } from 'my-easy-fp';
-import { existsSync, getDirname } from 'my-node-fp';
+import { isEmpty, isError, isFalse } from 'my-easy-fp';
+import { existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
+import { IPass, isFail, isPass } from 'my-only-either';
 import * as path from 'path';
-import yargsAnyType, { Argv } from 'yargs';
+import * as rx from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
-// Yargs default type using object type(= {}). But object type cause error that
-// fast-maker cli option interface type. So we make concrete type yargs instance
-// make using by any type.
-const yargs: Argv<ITjsCliOption> = yargsAnyType as any;
-consola.level = LogLevel.Success;
+export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
+  const verbose = baseOption.verbose ?? false;
+  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
 
-// eslint-disable-next-line
-const argv = yargs(process.argv.slice(2))
-  .command<ITjsCliOption>({
-    command: '$0 [cwds...]',
-    aliases: 'tsj [cwds...]',
-    builder: (args: Argv<ITjsCliOption>) => {
-      args.option('extraTags', {
-        alias: 'a',
-        describe: 'TJS option extraTags',
-        type: 'array',
+  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
+
+  const resolvedPath: IResolvePath = {
+    resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
+    resolvedProjectDirPath: replaceSepToPosix(getDirnameSync(path.resolve(baseOption.project))),
+    resolvedProjectFilePath: replaceSepToPosix(path.resolve(baseOption.project)),
+  };
+
+  const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
+
+  const project = getTsProject(option);
+
+  if (isFail(project)) {
+    throw project.fail;
+  }
+
+  // If your set interactive true and type, filename is empty trigger interactive cli
+  if (option.files.length <= 0 && isMessageDisplay && option.interactive) {
+    const filePaths = await getFileNameFromCli(option);
+    option.files = filePaths;
+  }
+
+  const sourceFiles = getSourceFiles({ project: project.pass, option });
+
+  if (isFail(sourceFiles)) {
+    throw sourceFiles.fail;
+  }
+
+  // If your set interactive true and type, filename is empty trigger interactive cli
+  if (option.types.length <= 0 && isMessageDisplay && option.interactive) {
+    const typeNames = await getTypeNameFromCli(project.pass, option);
+    option.types = typeNames.map((typeName) => typeName.identifier);
+  }
+
+  const exportedTypes = getExportedTypes({ project: project.pass, sourceFiles: sourceFiles.pass, option });
+
+  if (isFail(exportedTypes)) {
+    throw exportedTypes.fail;
+  }
+
+  if (sourceFiles.pass.length <= 0 && exportedTypes.pass.length <= 0) {
+    throw new Error('SourceFile, Type not founed');
+  }
+
+  const template = loadTemplate(option);
+
+  const jsonSchemas = exportedTypes.pass
+    .map((exportedType) => {
+      return exportedType.exportedDeclarations.map((exportedDeclaration) => {
+        return generateJSONSchemaByTSJ(option, exportedType.sourceFilePath, exportedDeclaration.identifier);
       });
+    })
+    .flat();
 
-      args.option('jsDoc', {
-        alias: 'd',
-        describe: 'TJS option jsDoc',
-        type: 'string',
+  // const failJSONSchemas = jsonSchemas.filter((result): result is IFail<Error> => isFail(result));
+  const passJSONSchemas = jsonSchemas.filter((result): result is IPass<IGeneratedJSONSchemaFromTSJ> => isPass(result));
+
+  const outputJSONSchemas = passJSONSchemas
+    .map((schema) => moveTopRef(schema.pass))
+    .map((schema) => getOutputSchemaFile(schema, option))
+    .map((schema) => {
+      const formatted = applyFormat(
+        { variableName: schema.typeName, jsonSchemaContent: schema.schema },
+        { ...option, template },
+      );
+      return { ...schema, formatted };
+    });
+
+  const prettierApplied = await Promise.all(
+    outputJSONSchemas.map<Promise<TOutputJSONSchema>>(async (schema) => {
+      const formatted = await applyPrettier(schema.formatted, option);
+      return { ...schema, formatted };
+    }),
+  );
+
+  await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
+
+  if (option.seperateDefinitions) {
+    const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
+    await Promise.all(definitionSchemas.definitions.map((schema) => writeSchema(schema, option)));
+
+    const definitionModuleFile = await getDefinitions(project.pass, option);
+    await writeDefinitionModule(definitionModuleFile, option);
+  }
+}
+
+export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessageDisplay?: boolean) {
+  const verbose = baseOption.verbose ?? false;
+  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
+  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
+
+  const resolvedPath: IResolvePath = {
+    resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
+    resolvedProjectDirPath: replaceSepToPosix(getDirnameSync(path.resolve(baseOption.project))),
+    resolvedProjectFilePath: replaceSepToPosix(path.resolve(baseOption.project)),
+  };
+
+  const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
+
+  const project = getTsProject(option);
+
+  if (isFail(project)) {
+    throw project.fail;
+  }
+
+  // If your set interactive true and type, filename is empty trigger interactive cli
+  if (option.files.length <= 0 && isMessageDisplay && option.interactive) {
+    const filePaths = await getFileNameFromCli(option);
+    option.files = filePaths;
+  }
+
+  const sourceFiles = getSourceFiles({ project: project.pass, option });
+
+  if (isFail(sourceFiles)) {
+    throw sourceFiles.fail;
+  }
+
+  // If your set interactive true and type, filename is empty trigger interactive cli
+  if (option.types.length <= 0 && isMessageDisplay && option.interactive) {
+    const typeNames = await getTypeNameFromCli(project.pass, option);
+    option.types = typeNames.map((typeName) => typeName.identifier);
+  }
+
+  const exportedTypes = getExportedTypes({ project: project.pass, sourceFiles: sourceFiles.pass, option });
+
+  if (isFail(exportedTypes)) {
+    throw exportedTypes.fail;
+  }
+
+  const template = loadTemplate(option);
+
+  const jsonSchemas = exportedTypes.pass
+    .map((exportedType) => {
+      return exportedType.exportedDeclarations.map((exportedDeclaration) => {
+        return generateJSONSchemaByTJS(option, exportedType.sourceFilePath, exportedDeclaration.identifier);
       });
+    })
+    .flat();
 
-      args.option('expose', {
-        alias: 'e',
-        describe: 'TJS optin expose',
-        type: 'string',
-      });
+  // const failJSONSchemas = jsonSchemas.filter((result): result is IFail<Error> => isFail(result));
+  const passJSONSchemas = jsonSchemas.filter((result): result is IPass<IGeneratedJSONSchemaFromTJS> => isPass(result));
 
-      args.option('additionalProperties', {
-        alias: 'n',
-        describe: 'TJS optin additionalProperties',
-        type: 'boolean',
-      });
+  const outputJSONSchemas = passJSONSchemas
+    .map((schema) => schema.pass)
+    .map((schema) => getOutputSchemaFile(schema, option))
+    .map((schema) => {
+      const formatted = applyFormat(
+        { variableName: schema.typeName, jsonSchemaContent: schema.schema },
+        { ...option, template },
+      );
+      return { ...schema, formatted };
+    });
 
-      return args;
-    },
-    handler: async (args) => {
-      try {
-        const verbose = args.verbose ?? false;
-        consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+  const prettierApplied = await Promise.all(
+    outputJSONSchemas.map<Promise<TOutputJSONSchema>>(async (schema) => {
+      const formatted = await applyPrettier(schema.formatted, option);
+      return { ...schema, formatted };
+    }),
+  );
 
-        const cwd = args.cwd ?? process.cwd();
-        const configLoaded = await configFileLoad({ cwd });
-        const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
-        const prefix = args.prefix ?? config.prefix;
-        const project =
-          process.env.TS_NODE_PROJECT ?? args.project ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+  await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
+}
 
-        if (isFalse(existsSync(path.resolve(project)))) {
-          consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
-          process.exit(1);
-        }
+export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption) {
+  const verbose = baseOption.verbose ?? false;
+  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
 
-        if (prefix === undefined || prefix === null || prefix === '') {
-          consola.warn(
-            'Prefix option is empty, generated jsonschema file overwrite source file.',
-            'You can recover original file from backup file.',
-          );
-        }
+  const watchDir = baseOption.watch;
+  const watchDebounceTime = baseOption.debounceTime ?? 1000;
 
-        // Change working directory path
-        const resolvedProject = path.resolve(project);
-        const tsconfigPath = path.resolve(await getDirname(project));
-        const relativePathFiles = (args.files ?? config.files ?? [])
-          .map((file) => path.resolve(file))
-          .map((file) => path.relative(tsconfigPath, file));
+  if (isEmpty(watchDir)) {
+    throw new Error('watch command need watch directory');
+  }
 
-        process.chdir(tsconfigPath);
+  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
+  const resolvedWatchDir = replaceSepToPosix(win32DriveLetterUpdown(path.resolve(watchDir)));
 
-        consola.debug('Path-1: ', relativePathFiles, project, tsconfigPath, resolvedProject);
+  if (isFalse(existsSync(resolvedWatchDir))) {
+    throw new Error('watch command need watch directory');
+  }
 
-        const option: ITjsCliOption = {
-          engine: 'tsj',
-          project: resolvedProject,
-          verbose,
-          files: relativePathFiles,
-          types: args.types ?? config.types ?? [],
-          output: args.output ?? config.output ?? undefined,
-          outputType: args.outputType ?? config.outputType ?? 'ts',
-          prefix,
-          formatPath: args.formatPath ?? config.formatPath ?? undefined,
-          topRef: args.topRef ?? config.topRef ?? false,
-          cwd: args.cwd ?? config.cwd ?? process.cwd(),
-          expose: args.expose ?? config.expose ?? 'export',
-          jsDoc: args.jsDoc ?? config.jsDoc ?? 'extended',
-          extraTags: args.extraTags ?? config.extraTags ?? [],
-          additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
-        };
+  const resolvedPath: IResolvePath = {
+    resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
+    resolvedProjectDirPath: replaceSepToPosix(getDirnameSync(path.resolve(baseOption.project))),
+    resolvedProjectFilePath: replaceSepToPosix(path.resolve(baseOption.project)),
+  };
 
-        const result = await engineTsj(config.format, option);
+  const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
 
-        if (TEI.isLeft(result)) {
-          consola.error(result.left);
-          process.exit(1);
-        }
+  const project = getTsProject(option);
 
-        consola.debug('entered-tsj: ', option);
-      } catch (catched) {
-        const err = catched instanceof Error ? catched : new Error('unknown error raised');
-        consola.error(err);
+  if (isFail(project)) {
+    throw project.fail;
+  }
+
+  const watcher = chokidar.watch(resolvedWatchDir, {
+    ignored: [/__tests__/, /__test__/, 'node_modules', /^\..+/],
+    ignoreInitial: true,
+    cwd: option.cwd,
+  });
+
+  const subject = new rx.Subject<{ type: 'add' | 'change'; filePath: string }>();
+
+  consola.debug('watch 모드 시작');
+
+  subject.pipe(debounceTime(watchDebounceTime)).subscribe((changeValue) => {
+    try {
+      const filePath = path.isAbsolute(changeValue.filePath)
+        ? changeValue.filePath
+        : replaceSepToPosix(win32DriveLetterUpdown(path.resolve(path.join(option.cwd, changeValue.filePath)), 'upper'));
+
+      const fileExt = path.extname(filePath);
+
+      if (fileExt !== '.ts' && fileExt !== '.mts' && fileExt !== '.cts') {
+        return;
       }
-    },
-  })
-  .command<ITjsCliOption>({
-    command: 'tjs [cwds...]',
-    builder: (args: Argv<ITjsCliOption>) => args,
-    handler: async (args) => {
-      try {
-        const verbose = args.verbose ?? false;
-        consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
 
-        const cwd = args.cwd ?? process.cwd();
-        const configLoaded = await configFileLoad({ cwd });
-        const config: { [key: string]: any } = TEI.isRight(configLoaded) ? configLoaded.right : {};
-        const prefix = args.prefix ?? config.prefix;
-        const project =
-          process.env.TS_NODE_PROJECT ?? args.project ?? config.project ?? path.join(process.cwd(), 'tsconfig.json');
+      const sourceFile = project.pass.getSourceFile(path.basename(filePath));
 
-        if (isFalse(existsSync(path.resolve(project)))) {
-          consola.error(new Error(`Error: invalid tsconfig path - ${project}`));
-          process.exit(1);
-        }
-
-        if (prefix === undefined || prefix === null || prefix === '') {
-          consola.warn(
-            'Prefix option is empty, generated jsonschema file overwrite source file.',
-            'You can recover original file from backup file.',
-          );
-        }
-
-        // Change working directory path
-        const resolvedProject = path.resolve(project);
-        const tsconfigPath = path.resolve(await getDirname(project));
-        const relativePathFiles = (args.files ?? config.files ?? [])
-          .map((file) => path.resolve(file))
-          .map((file) => path.relative(tsconfigPath, file));
-
-        process.chdir(tsconfigPath);
-
-        consola.debug('Path-2: ', project, tsconfigPath, path.resolve(project));
-
-        const option: ITjsCliOption = {
-          engine: 'tjs',
-          project: resolvedProject,
-          verbose,
-          files: relativePathFiles,
-          types: args.types ?? config.types ?? [],
-          output: args.output ?? config.output ?? undefined,
-          outputType: args.outputType ?? config.outputType ?? 'ts',
-          prefix,
-          formatPath: args.formatPath ?? config.formatPath ?? undefined,
-          additionalProperties: args.additionalProperties ?? config.additionalProperties ?? false,
-          topRef: args.topRef ?? config.topRef ?? false,
-          cwd: args.cwd ?? config.cwd ?? process.cwd(),
-        };
-
-        const result = await engineTjs(config.format, option);
-
-        if (TEI.isLeft(result)) {
-          consola.error(result.left);
-          process.exit(1);
-        }
-
-        consola.debug('entered-tjs: ', option);
-      } catch (catched) {
-        const err = catched instanceof Error ? catched : new Error('unknown error raised');
-        consola.error(err);
+      if (sourceFile === undefined || sourceFile === null) {
+        consola.error('Cannot found typescript source file: ', filePath);
+        return;
       }
-    },
-  })
-  .option('files', {
-    alias: 'f',
-    describe: 'target file for schema extraction',
-    type: 'array',
-  })
-  .option('types', {
-    alias: 't',
-    describe: 'interface or type alias name in target file',
-    type: 'array',
-  })
-  .option('project', {
-    alias: 'p',
-    describe: 'project path',
-    type: 'string',
-  })
-  .option('output-type', {
-    alias: 'u',
-    describe: "output-type: 'json' or 'ts', default ts",
-    type: 'string',
-  })
-  .option('output', {
-    alias: 'o',
-    describe: 'output directory',
-    type: 'string',
-  })
-  .option('prefix', {
-    alias: 'x',
-    describe: "prefix of output filename, default 'JSC_'",
-    type: 'string',
-  })
-  .option('format', {
-    alias: 'r',
-    describe: 'output contents layout',
-    type: 'string',
-  })
-  .option('verbose', {
-    alias: 'v',
-    describe: 'verbose message',
-    type: 'boolean',
-  })
-  .help().argv;
 
-consola.debug('테스트: ', 'filenames' in argv ? argv.files : 'empty');
-consola.debug('테스트: ', argv);
-consola.debug('테스트: ', process.env.DEBUG);
+      const optionWithFiles = { ...option, f: [filePath], files: [filePath] };
+
+      const exportTypes = getAllExportTypes({ project: project.pass, sourceFiles: [filePath] });
+
+      const typeNames = exportTypes
+        .map((exportType) =>
+          exportType.exportedDeclarations.map((exportedDeclaration) => exportedDeclaration.identifier),
+        )
+        .flat();
+
+      consola.debug('입력 받은 파일: ', changeValue.type, changeValue.filePath);
+      consola.debug('타입 추출: ', typeNames);
+
+      const optionWithTypes = { ...optionWithFiles, types: typeNames, t: typeNames };
+
+      generateJSONSchemaUsingTSJ(optionWithTypes, false);
+    } catch (catched) {
+      const err = isError(catched) ?? new Error('');
+      consola.error(err);
+    }
+  });
+
+  watcher
+    .on('add', (filePath) => {
+      consola.log('파일 추가: ', filePath);
+      subject.next({ type: 'add', filePath });
+    })
+    .on('change', (filePath) => {
+      consola.log('파일 변경: ', filePath);
+      subject.next({ type: 'change', filePath });
+    });
+}
