@@ -75,7 +75,7 @@ task('+pub:dev', async () => {
 
 task('build', series('clean', '+build'));
 task('dts-bundle', series('+dts-bundle', 'clean:dts'));
-task('pub:prod', series('clean', '+webpack:prod', '+pub:prod'));
-task('pub:dev', series('clean', '+webpack:dev', '+pub:dev'));
+task('pub:prod', series('clean', '+webpack:prod', '+dts-bundle', 'clean:dts', '+pub:prod'));
+task('pub:dev', series('clean', '+webpack:dev', '+dts-bundle', 'clean:dts', '+pub:dev'));
 task('webpack:dev', series('clean', '+webpack:dev', '+dts-bundle', 'clean:dts'));
 task('webpack:prod', series('clean', '+webpack:prod', '+dts-bundle', 'clean:dts'));
