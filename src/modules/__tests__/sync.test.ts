@@ -6,6 +6,9 @@ import moveTopRef from '@modules/moveTopRef';
 import posixJoin from '@tools/posixJoin';
 import * as env from '@tools/testenv';
 import consola, { LogLevel } from 'consola';
+import fs from 'fs';
+import { isFalse } from 'my-easy-fp';
+import { exists } from 'my-node-fp';
 import { IPass, isPass } from 'my-only-either';
 import path from 'path';
 import * as tsm from 'ts-morph';
@@ -15,11 +18,15 @@ const share: {
   project01: tsm.Project;
 } = {} as any;
 
-beforeAll(() => {
+beforeAll(async () => {
   consola.level = LogLevel.Debug;
 
   share.projectPath01 = posixJoin(env.exampleType01Path, 'tsconfig.json');
   share.project01 = new tsm.Project({ tsConfigFilePath: share.projectPath01 });
+
+  if (isFalse(await exists(env.exampleOutputPath))) {
+    await fs.promises.mkdir(env.exampleOutputPath, { recursive: true });
+  }
 });
 
 test('t001-getOutputSchemaFile-case01', async () => {
@@ -73,10 +80,14 @@ test('t001-getOutputSchemaFile-case01', async () => {
     .map((schema) => schema.pass);
 
   const output = schemas.map((schema) => getOutputSchemaFile(schema, option));
+  const sortedOutput = output.sort((left, right) => left.filePath.localeCompare(right.filePath));
 
   const expectation = await import(path.join(__dirname, 'expects', expectFileName));
+  const sortedExpectation = expectation.default.sort((left: any, right: any) =>
+    left.filePath.localeCompare(right.filePath),
+  );
 
-  expect(output).toEqual(expectation.default);
+  expect(sortedOutput).toEqual(sortedExpectation);
 });
 
 test('t002-moveTopRef-case01', async () => {
@@ -117,7 +128,12 @@ test('t002-moveTopRef-case01', async () => {
     .map((schema) => schema.pass);
 
   const output = schemas.map((schema) => moveTopRef(schema));
-  const expectation = await import(path.join(__dirname, 'expects', expectFileName));
+  const sortedOutput = output.sort((left, right) => left.filePath.localeCompare(right.filePath));
 
-  expect(output).toEqual(expectation.default);
+  const expectation = await import(path.join(__dirname, 'expects', expectFileName));
+  const sortedExpectation = expectation.default.sort((left: any, right: any) =>
+    left.filePath.localeCompare(right.filePath),
+  );
+
+  expect(sortedOutput).toEqual(sortedExpectation);
 });

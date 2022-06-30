@@ -34,7 +34,7 @@ task('lint', async () => {
 });
 
 task('test', async () => {
-  const cmd = 'jest --color --fail-fast --verbose --config ./.config/jest.config.js';
+  const cmd = 'jest --colors --verbose --config ./.config/jest.config.js';
   await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
 });
 
