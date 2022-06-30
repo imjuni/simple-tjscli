@@ -22,6 +22,7 @@ import moveTopRef from '@modules/moveTopRef';
 import writeDefinitionModule from '@modules/writeDefinitionModule';
 import writeSchema from '@modules/writeSchema';
 import chokidar from 'chokidar';
+import colors from 'colors';
 import consola, { LogLevel } from 'consola';
 import { isEmpty, isError, isFalse } from 'my-easy-fp';
 import { existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
@@ -32,7 +33,14 @@ import { debounceTime } from 'rxjs/operators';
 
 export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
-  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
+  if (isFalse(isMessageDisplay ?? false)) {
+    consola.level = LogLevel.Error;
+  } else if (verbose) {
+    consola.level = LogLevel.Debug;
+  } else {
+    consola.level = LogLevel.Success;
+  }
 
   const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
 
@@ -43,6 +51,8 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
   };
 
   const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
+
+  consola.info(`cwd: "${colors.yellow(option.resolvedCwd)}"`);
 
   const project = getTsProject(option);
 
@@ -62,6 +72,8 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     throw sourceFiles.fail;
   }
 
+  consola.info('source files: ', sourceFiles.pass.map((sourceFile) => colors.yellow(sourceFile)).join(', '));
+
   // If your set interactive true and type, filename is empty trigger interactive cli
   if (option.types.length <= 0 && isMessageDisplay && option.interactive) {
     const typeNames = await getTypeNameFromCli(project.pass, option);
@@ -78,6 +90,16 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     throw new Error('SourceFile, Type not founed');
   }
 
+  consola.info(
+    'exported types: ',
+    exportedTypes.pass
+      .map((exportedType) =>
+        exportedType.exportedDeclarations.map((exportedDeclaration) => exportedDeclaration.identifier),
+      )
+      .flat()
+      .map((typeName) => colors.yellow(typeName))
+      .join(', '),
+  );
   const template = loadTemplate(option);
 
   const jsonSchemas = exportedTypes.pass
@@ -96,11 +118,13 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     .map((schema) => getOutputSchemaFile(schema, option))
     .map((schema) => {
       const formatted = applyFormat(
-        { variableName: schema.typeName, jsonSchemaContent: schema.schema },
+        { banner: schema.banner, variableName: schema.typeName, jsonSchemaContent: schema.schema },
         { ...option, template },
       );
       return { ...schema, formatted };
     });
+
+  consola.success(`schema ${colors.yellow('generation')} successed!`);
 
   const prettierApplied = await Promise.all(
     outputJSONSchemas.map<Promise<TOutputJSONSchema>>(async (schema) => {
@@ -111,18 +135,29 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
+  consola.success(`schema ${colors.yellow('write')} successed!`);
+
   if (option.seperateDefinitions) {
     const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
     await Promise.all(definitionSchemas.definitions.map((schema) => writeSchema(schema, option)));
 
     const definitionModuleFile = await getDefinitions(project.pass, option);
     await writeDefinitionModule(definitionModuleFile, option);
+
+    consola.success(`schema ${colors.yellow('definition')} successed!`);
   }
 }
 
 export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
-  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
+  if (isFalse(isMessageDisplay ?? false)) {
+    consola.level = LogLevel.Error;
+  } else if (verbose) {
+    consola.level = LogLevel.Debug;
+  } else {
+    consola.level = LogLevel.Success;
+  }
 
   const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
 
@@ -182,7 +217,7 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
     .map((schema) => getOutputSchemaFile(schema, option))
     .map((schema) => {
       const formatted = applyFormat(
-        { variableName: schema.typeName, jsonSchemaContent: schema.schema },
+        { banner: schema.banner, variableName: schema.typeName, jsonSchemaContent: schema.schema },
         { ...option, template },
       );
       return { ...schema, formatted };
@@ -198,23 +233,33 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 }
 
-export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption) {
+export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
-  consola.level = verbose ? LogLevel.Debug : LogLevel.Success;
+
+  if (isFalse(isMessageDisplay ?? false)) {
+    consola.level = LogLevel.Error;
+  } else if (verbose) {
+    consola.level = LogLevel.Debug;
+  } else {
+    consola.level = LogLevel.Success;
+  }
 
   const watchDir = baseOption.watch;
   const watchDebounceTime = baseOption.debounceTime ?? 1000;
 
   if (isEmpty(watchDir)) {
-    throw new Error('watch command need watch directory');
+    throw new Error(`watch command need watch directory: ${watchDir ?? ''}`);
   }
 
   const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
   const resolvedWatchDir = replaceSepToPosix(win32DriveLetterUpdown(path.resolve(watchDir)));
 
   if (isFalse(existsSync(resolvedWatchDir))) {
-    throw new Error('watch command need watch directory');
+    throw new Error(`Cannot found watch directory: ${resolvedWatchDir}`);
   }
+
+  consola.success('Watch command start!');
+  consola.info(`watching: ${colors.yellow(resolvedWatchDir)} ...`);
 
   const resolvedPath: IResolvePath = {
     resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
@@ -237,8 +282,6 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption) {
   });
 
   const subject = new rx.Subject<{ type: 'add' | 'change'; filePath: string }>();
-
-  consola.debug('watch 모드 시작');
 
   subject.pipe(debounceTime(watchDebounceTime)).subscribe((changeValue) => {
     try {
@@ -269,12 +312,12 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption) {
         )
         .flat();
 
-      consola.debug('입력 받은 파일: ', changeValue.type, changeValue.filePath);
-      consola.debug('타입 추출: ', typeNames);
+      consola.debug('input files: ', changeValue.type, changeValue.filePath);
+      consola.debug('input types: ', typeNames);
 
       const optionWithTypes = { ...optionWithFiles, types: typeNames, t: typeNames };
 
-      generateJSONSchemaUsingTSJ(optionWithTypes, false);
+      generateJSONSchemaUsingTSJ(optionWithTypes, true);
     } catch (catched) {
       const err = isError(catched) ?? new Error('');
       consola.error(err);
@@ -283,11 +326,11 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption) {
 
   watcher
     .on('add', (filePath) => {
-      consola.log('파일 추가: ', filePath);
+      consola.info(`file added: ${colors.yellow(filePath)}`);
       subject.next({ type: 'add', filePath });
     })
     .on('change', (filePath) => {
-      consola.log('파일 변경: ', filePath);
+      consola.info(`file changed: ${colors.yellow(filePath)}`);
       subject.next({ type: 'change', filePath });
     });
 }

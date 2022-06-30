@@ -72,7 +72,7 @@ export default async function aggregateDefinitions(schemas: TOutputJSONSchema[],
     const reason: IReason = {
       type: 'error',
       filePath: `${errorTypeName.typeName}${option.extName.startsWith('.') ? option.extName : `${extName}`}`,
-      message: '',
+      message: `Detect duplicate definition: ${errorTypeName.typeName} * ${errorTypeName.count}`,
     };
 
     return reason;
@@ -121,7 +121,10 @@ export default async function aggregateDefinitions(schemas: TOutputJSONSchema[],
     .filter((schema): schema is TOutputJSONSchema => isNotEmpty(schema));
 
   const formattedDefinisionSchemas = definisionSchemas.map((schema) => {
-    const formatted = applyFormat({ variableName: schema.typeName, jsonSchemaContent: schema.schema }, option);
+    const formatted = applyFormat(
+      { banner: schema.banner, variableName: schema.typeName, jsonSchemaContent: schema.schema },
+      option,
+    );
     return { ...schema, formatted };
   });
 
