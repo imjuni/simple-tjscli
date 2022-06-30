@@ -33,5 +33,9 @@ export default function applyFormat(content: ITemplateContents, option: ICommonO
     .replace(new RegExp(getTemplateKey('VARIABLE_NAME'), 'g'), appendNewline(content.variableName))
     .replace(new RegExp(getTemplateKey('JSON_SCHEMA_CONTENT'), 'g'), appendNewline(stringified));
 
-  return formatted;
+  if (option.noBanner) {
+    return formatted;
+  }
+
+  return `${content.banner}\n${formatted}`;
 }

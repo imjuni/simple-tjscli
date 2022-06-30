@@ -61,8 +61,7 @@ const argv = yargs(process.argv.slice(2))
     handler: async (args) => {
       try {
         const option = getRequiredTsjOption(args);
-
-        watchJSONSchemaUsingTSJ(option);
+        watchJSONSchemaUsingTSJ(option, true);
       } catch (catched) {
         const err = isError(catched) ?? new Error('unknown error raised');
         consola.error(err);

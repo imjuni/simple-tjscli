@@ -2,10 +2,11 @@ const webpack = require('webpack');
 const path = require('path');
 const tsconfigPathsWebpackPlugin = require('tsconfig-paths-webpack-plugin');
 const webpackNodeExternals = require('webpack-node-externals');
+const { merge } = require('webpack-merge');
 
-const distPath = path.resolve(path.join(__dirname, 'dist'));
+const distPath = path.resolve(path.join(__dirname, '..', 'dist'));
 
-const config = {
+const appConfig = {
   devtool: 'inline-source-map',
   externals: [
     webpackNodeExternals({
@@ -14,19 +15,6 @@ const config = {
   ],
   mode: 'development',
   target: 'node',
-
-  // cache: {
-  //   // 1. Set cache type to filesystem
-  //   type: 'filesystem',
-
-  //   buildDependencies: {
-  //     // 2. Add your config as buildDependency to get cache invalidation on config change
-  //     config: [__filename],
-
-  //     // 3. If you have other things the build depends on you can add them here
-  //     // Note that webpack, loaders and all modules referenced from your config are automatically added
-  //   },
-  // },
 
   resolve: {
     fallback: {
@@ -39,21 +27,18 @@ const config = {
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     plugins: [
-      new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true }),
       new tsconfigPathsWebpackPlugin({
         configFile: 'tsconfig.json',
       }),
     ],
   },
 
-  plugins: [new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true })],
-
   entry: {
-    tjscli: ['./src/tjscli.ts'],
+    tjscli: [path.join(__dirname, '..', 'src', 'tjscli.ts')],
   },
 
   output: {
-    filename: 'index.js',
+    filename: 'tjscli.js',
     libraryTarget: 'commonjs',
     path: distPath,
   },
@@ -81,4 +66,18 @@ const config = {
   },
 };
 
-module.exports = config;
+const cliConfig = merge(appConfig, {
+  plugins: [new webpack.BannerPlugin({ banner: '#!/usr/bin/env node', raw: true })],
+
+  entry: {
+    tjscli: [path.join(__dirname, '..', 'src', 'cli.ts')],
+  },
+
+  output: {
+    filename: 'cli.js',
+    libraryTarget: 'commonjs',
+    path: distPath,
+  },
+});
+
+module.exports = [appConfig, cliConfig];
