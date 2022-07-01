@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { option, series, task } from 'just-scripts';
+import { argv, option, series, task } from 'just-scripts';
 import { exec } from 'just-scripts-utils';
 
 option('env', { default: { env: process.env.RUN_MODE } });
@@ -44,7 +44,10 @@ task('coverage', async () => {
 });
 
 task('dev', async () => {
-  const cmd = 'ts-node ./src/cli.ts';
+  const cmd = `ts-node ./src/cli.ts ${argv()._[1]} ${process.argv
+    .slice(2)
+    .filter((argvElement) => argvElement !== 'tjs' && argvElement !== 'tjs')
+    .join(' ')}`;
   await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
 });
 

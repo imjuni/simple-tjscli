@@ -27,6 +27,7 @@ import consola, { LogLevel } from 'consola';
 import { isEmpty, isError, isFalse } from 'my-easy-fp';
 import { existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
 import { IPass, isFail, isPass } from 'my-only-either';
+import { TraversalCallback, TraversalCallbackContext, traverse } from 'object-traversal';
 import * as path from 'path';
 import * as rx from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -115,8 +116,26 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
   const outputJSONSchemas = passJSONSchemas
     .map((schema) => moveTopRef(schema.pass))
-    .map((schema) => getOutputSchemaFile(schema, option))
-    .map((schema) => {
+    .map((schema) => getOutputSchemaFile(schema, option));
+
+  consola.success(`schema ${colors.yellow('generation')} successed!`);
+
+  if (option.seperateDefinitions) {
+    const traverseHandle: TraversalCallback = ({ parent, key, value }: TraversalCallbackContext): any => {
+      if (parent !== undefined && parent !== null && key !== undefined && key !== null && key === '$ref') {
+        // eslint-disable-next-line no-param-reassign
+        parent[key] = value.replace('#/definitions/', '');
+      }
+
+      return parent;
+    };
+
+    const changeExternalDefinitionJSONSchemas = outputJSONSchemas.map((schema) => {
+      traverse(schema.schema, traverseHandle);
+      return schema;
+    });
+
+    const formatApplied = changeExternalDefinitionJSONSchemas.map((schema) => {
       const formatted = applyFormat(
         { banner: schema.banner, variableName: schema.typeName, jsonSchemaContent: schema.schema },
         { ...option, template },
@@ -124,10 +143,38 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
       return { ...schema, formatted };
     });
 
-  consola.success(`schema ${colors.yellow('generation')} successed!`);
+    const prettierApplied = await Promise.all(
+      formatApplied.map<Promise<TOutputJSONSchema>>(async (schema) => {
+        const formatted = await applyPrettier(schema.formatted, option);
+        return { ...schema, formatted };
+      }),
+    );
+
+    await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
+
+    consola.success(`schema ${colors.yellow('write')} successed!`);
+
+    const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
+    await Promise.all(definitionSchemas.definitions.map((schema) => writeSchema(schema, option)));
+
+    const definitionModuleFile = await getDefinitions(project.pass, option);
+    await writeDefinitionModule(definitionModuleFile, option);
+
+    consola.success(`schema ${colors.yellow('definition')} successed!`);
+
+    return;
+  }
+
+  const formatApplied = outputJSONSchemas.map((schema) => {
+    const formatted = applyFormat(
+      { banner: schema.banner, variableName: schema.typeName, jsonSchemaContent: schema.schema },
+      { ...option, template },
+    );
+    return { ...schema, formatted };
+  });
 
   const prettierApplied = await Promise.all(
-    outputJSONSchemas.map<Promise<TOutputJSONSchema>>(async (schema) => {
+    formatApplied.map<Promise<TOutputJSONSchema>>(async (schema) => {
       const formatted = await applyPrettier(schema.formatted, option);
       return { ...schema, formatted };
     }),
@@ -136,16 +183,6 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
   consola.success(`schema ${colors.yellow('write')} successed!`);
-
-  if (option.seperateDefinitions) {
-    const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
-    await Promise.all(definitionSchemas.definitions.map((schema) => writeSchema(schema, option)));
-
-    const definitionModuleFile = await getDefinitions(project.pass, option);
-    await writeDefinitionModule(definitionModuleFile, option);
-
-    consola.success(`schema ${colors.yellow('definition')} successed!`);
-  }
 }
 
 export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessageDisplay?: boolean) {
