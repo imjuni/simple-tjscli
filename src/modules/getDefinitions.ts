@@ -3,6 +3,7 @@ import getOutputDirPath from '@modules/getOutputDirPath';
 import IReason from '@modules/interfaces/IReason';
 import fs from 'fs';
 import { isEmpty, isFalse, isNotEmpty } from 'my-easy-fp';
+import { exists } from 'my-node-fp';
 import path from 'path';
 import * as tsm from 'ts-morph';
 import applyPrettier from './applyPrettier';
@@ -52,7 +53,13 @@ export default async function getDefinitions(project: tsm.Project, option: ITsjO
     isNotEmpty(outputDirPath) &&
     option.seperateDefinitions
   ) {
-    const definitionFiles = await fs.promises.readdir(path.join(outputDirPath, 'definitions', 'schemas'));
+    const definitionDirPath = path.join(outputDirPath, 'definitions', 'schemas');
+
+    if (isFalse(await exists(definitionDirPath))) {
+      await fs.promises.mkdir(definitionDirPath, { recursive: true });
+    }
+
+    const definitionFiles = await fs.promises.readdir(definitionDirPath);
     const definitionFileImportStatements = definitionFiles
       .map(
         (definitionFile) =>
