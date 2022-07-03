@@ -13,6 +13,7 @@ import applyPrettier from '@modules/applyPrettier';
 import generateJSONSchemaByTJS from '@modules/generateJSONSchemaByTJS';
 import generateJSONSchemaByTSJ from '@modules/generateJSONSchemaByTSJ';
 import getDefinitions from '@modules/getDefinitions';
+import getOutputDirPath from '@modules/getOutputDirPath';
 import getOutputSchemaFile from '@modules/getOutputSchemaFile';
 import IGeneratedJSONSchemaFromTJS from '@modules/interfaces/IGeneratedJSONSchemaFromTJS';
 import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
@@ -24,8 +25,9 @@ import writeSchema from '@modules/writeSchema';
 import chokidar from 'chokidar';
 import colors from 'colors';
 import consola, { LogLevel } from 'consola';
+import fs from 'fs';
 import { isEmpty, isError, isFalse, isNotEmpty } from 'my-easy-fp';
-import { existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
+import { exists, existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
 import { IPass, isFail, isPass } from 'my-only-either';
 import { TraversalCallback, TraversalCallbackContext, traverse } from 'object-traversal';
 import * as path from 'path';
@@ -118,6 +120,11 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
       .join(', '),
   );
   const template = loadTemplate(option);
+  const outputDirPath = getOutputDirPath(option);
+
+  if (outputDirPath !== undefined && outputDirPath !== null && isFalse(await exists(outputDirPath))) {
+    await fs.promises.mkdir(outputDirPath, { recursive: true });
+  }
 
   const jsonSchemas = exportedTypes.pass
     .map((exportedType) => {
@@ -268,6 +275,11 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
   }
 
   const template = loadTemplate(option);
+  const outputDirPath = getOutputDirPath(option);
+
+  if (outputDirPath !== undefined && outputDirPath !== null && isFalse(await exists(outputDirPath))) {
+    await fs.promises.mkdir(outputDirPath, { recursive: true });
+  }
 
   const jsonSchemas = exportedTypes.pass
     .map((exportedType) => {
