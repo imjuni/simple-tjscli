@@ -1,7 +1,7 @@
 import ITsjOption from '@config/interfaces/ITsjOption';
+import getWorkingDirectory from '@modules/getWorkingDirectory';
 import { parse } from 'jsonc-parser';
 import minimist from 'minimist';
-import { getDirnameSync } from 'my-node-fp';
 
 export default function getCliTjsOption(
   configBuf: Buffer,
@@ -10,14 +10,14 @@ export default function getCliTjsOption(
   project: string,
 ) {
   const rawConfig = parse(configBuf.toString());
-  const projectDirPath = getDirnameSync(project);
 
   const option: ITsjOption = {
     generator: 'tsj',
 
     // ICommonOption
-    w: argv.w ?? argv.cwd ?? rawConfig.cwd ?? projectDirPath,
-    cwd: argv.w ?? argv.cwd ?? rawConfig.cwd ?? projectDirPath,
+    // ICommonOption
+    w: argv.w ?? argv.cwd ?? rawConfig.cwd ?? getWorkingDirectory(argv.w ?? argv.cwd ?? rawConfig.cwd),
+    cwd: argv.w ?? argv.cwd ?? rawConfig.cwd ?? getWorkingDirectory(argv.w ?? argv.cwd ?? rawConfig.cwd),
     c: argv.c ?? argv.config ?? rawConfig.config ?? configFilePath,
     config: argv.c ?? argv.config ?? rawConfig.config ?? configFilePath,
     p: argv.p ?? argv.project ?? rawConfig.project ?? project,

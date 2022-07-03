@@ -1,6 +1,6 @@
 {
   "name": "simple-tjscli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "test": "just --config ./.config/just.config.ts test",
