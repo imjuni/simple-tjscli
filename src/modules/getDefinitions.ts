@@ -86,7 +86,13 @@ export default async function getDefinitions(project: tsm.Project, option: ITsjO
   }
 
   if (option.outputType === 'ts' && option.sync && isNotEmpty(outputDirPath) && option.seperateDefinitions) {
-    const definitionFiles = await fs.promises.readdir(path.join(outputDirPath, 'definitions', 'schemas'));
+    const definitionDirPath = path.join(outputDirPath, 'definitions', 'schemas');
+
+    if (isFalse(await exists(definitionDirPath))) {
+      await fs.promises.mkdir(definitionDirPath, { recursive: true });
+    }
+
+    const definitionFiles = await fs.promises.readdir(definitionDirPath);
     const definitionFilesWithoutExt = definitionFiles.map((definitionFile) =>
       definitionFile.replace(path.extname(definitionFile), ''),
     );
