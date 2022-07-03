@@ -24,13 +24,14 @@ import writeSchema from '@modules/writeSchema';
 import chokidar from 'chokidar';
 import colors from 'colors';
 import consola, { LogLevel } from 'consola';
-import { isEmpty, isError, isFalse } from 'my-easy-fp';
+import { isEmpty, isError, isFalse, isNotEmpty } from 'my-easy-fp';
 import { existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
 import { IPass, isFail, isPass } from 'my-only-either';
 import { TraversalCallback, TraversalCallbackContext, traverse } from 'object-traversal';
 import * as path from 'path';
 import * as rx from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import * as tsm from 'ts-morph';
 
 export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
@@ -43,7 +44,7 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     consola.level = LogLevel.Success;
   }
 
-  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
+  const { cwd } = baseOption;
 
   const resolvedPath: IResolvePath = {
     resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
@@ -71,6 +72,21 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
   if (isFail(sourceFiles)) {
     throw sourceFiles.fail;
+  }
+
+  const diagnostics = project.pass.getPreEmitDiagnostics();
+  const diagnosticFiles = diagnostics
+    .map((diagnostic) => diagnostic.getSourceFile())
+    .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+    .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+    .reduce((filePathSet, diagnosticFilePath) => {
+      filePathSet.add(diagnosticFilePath);
+      return filePathSet;
+    }, new Set<string>());
+
+  if (diagnosticFiles.size > 0) {
+    consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
   }
 
   consola.info('source files: ', sourceFiles.pass.map((sourceFile) => colors.yellow(sourceFile)).join(', '));
@@ -196,7 +212,7 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
     consola.level = LogLevel.Success;
   }
 
-  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
+  const { cwd } = baseOption;
 
   const resolvedPath: IResolvePath = {
     resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
@@ -210,6 +226,21 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
 
   if (isFail(project)) {
     throw project.fail;
+  }
+
+  const diagnostics = project.pass.getPreEmitDiagnostics();
+  const diagnosticFiles = diagnostics
+    .map((diagnostic) => diagnostic.getSourceFile())
+    .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+    .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+    .reduce((filePathSet, diagnosticFilePath) => {
+      filePathSet.add(diagnosticFilePath);
+      return filePathSet;
+    }, new Set<string>());
+
+  if (diagnosticFiles.size > 0) {
+    consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
   }
 
   // If your set interactive true and type, filename is empty trigger interactive cli
@@ -288,8 +319,8 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
     throw new Error(`watch command need watch directory: ${watchDir ?? ''}`);
   }
 
-  const cwd = replaceSepToPosix(baseOption.cwd ?? process.cwd());
-  const resolvedWatchDir = replaceSepToPosix(win32DriveLetterUpdown(path.resolve(watchDir)));
+  const { cwd } = baseOption;
+  const resolvedWatchDir = replaceSepToPosix(win32DriveLetterUpdown(path.resolve(path.join(baseOption.cwd, watchDir))));
 
   if (isFalse(existsSync(resolvedWatchDir))) {
     throw new Error(`Cannot found watch directory: ${resolvedWatchDir}`);
@@ -332,10 +363,32 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
         return;
       }
 
-      const sourceFile = project.pass.getSourceFile(path.basename(filePath));
+      const currentProject = getTsProject(option);
+
+      if (isFail(currentProject)) {
+        consola.error(`Error initialize project: ${colors.yellow(option.project)}`);
+        return;
+      }
+
+      const sourceFile = currentProject.pass.getSourceFile(path.basename(filePath));
 
       if (sourceFile === undefined || sourceFile === null) {
         consola.error('Cannot found typescript source file: ', filePath);
+        return;
+      }
+
+      const diagnostics = sourceFile.getPreEmitDiagnostics();
+      const diagnosticFiles = diagnostics
+        .map((diagnostic) => diagnostic.getSourceFile())
+        .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+        .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+        .reduce((filePathSet, diagnosticFilePath) => {
+          filePathSet.add(diagnosticFilePath);
+          return filePathSet;
+        }, new Set<string>());
+
+      if (diagnosticFiles.size > 0) {
+        consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
         return;
       }
 
