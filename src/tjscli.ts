@@ -175,6 +175,10 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
     await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
+    prettierApplied.map((schema) =>
+      consola.success(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`),
+    );
+
     consola.success(`schema ${colors.yellow('write')} successed!`);
 
     const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
@@ -311,6 +315,10 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
   );
 
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
+
+  prettierApplied.map((schema) =>
+    consola.success(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`),
+  );
 }
 
 export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
@@ -347,7 +355,7 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
     resolvedProjectFilePath: replaceSepToPosix(path.resolve(baseOption.project)),
   };
 
-  const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
+  const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd, watch: resolvedWatchDir };
 
   const project = getTsProject(option);
 
@@ -358,7 +366,7 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
   const watcher = chokidar.watch(resolvedWatchDir, {
     ignored: [/__tests__/, /__test__/, 'node_modules', /^\..+/],
     ignoreInitial: true,
-    cwd: option.cwd,
+    cwd: resolvedPath.resolvedCwd,
   });
 
   const subject = new rx.Subject<{ type: 'add' | 'change'; filePath: string }>();
