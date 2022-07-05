@@ -33,20 +33,36 @@ $ npx tjscli tsj-w --watch [watching directory]
 
 Most case, interactive mode or watch mode satisfy your need. tjscli ask to you that interface file to convert JSONSchema.
 
+# Example Project
+[maeum](https://github.com/imjuni/maeum) is example project. maeum using simple-tjscli and fast-maker.
+
+```
+# Clone the boilerplate:
+git clone --depth=1 \
+  https://github.com/imjuni/maeum \
+  your-project-name
+
+cd your-project-name
+npm install
+
+# run simple-tjscli watch mode
+npm run tjs-w
+```
+
 # Recommand configuration
 
 ## fastify
 1. create .tjsclirc
-```json
+```jsonc
 {
-  "cwd": "./src",
+  "cwd": "./src/dto",
   "project": "tsconfig.json",
-  "watch": "dto", // watch directory base on cwd directory
+  "watch": ".", // watch directory base on cwd directory
 
   // output directory and template
-  "output": "schemas", // output directory base on cwd directory
+  "output": "../schemas", // output directory base on cwd directory
   "outputType": "ts",
-  "template": "import { JSONSchema7 } from 'json-schema';\n \n const %{{VARIABLE_NAME}}%: JSONSchema7 = %{{JSON_SCHEMA_CONTENT}}%;\n\n\nexport default %{{VARIABLE_NAME}}%;\n"
+  "template": "import { JSONSchema7 } from 'json-schema';\\n \\n const %{{VARIABLE_NAME}}%: JSONSchema7 = %{{JSON_SCHEMA_CONTENT}}%;\\n\\n\\nexport default %{{VARIABLE_NAME}}%;\\n",
 
   // ts-json-schema-generator mode option
   "sync": true,
