@@ -7,7 +7,7 @@ simple-tjscli is interactive cli tool for JSONSchema generation from TypeScript 
 # Why tjscli?
 
 - convenient: tjscli provide interactive cli interface and variety option
-- fastify: optimize for fastify, @fastify/swagger
+- [fastify](https://www.fastify.io/): optimize for fastify, [@fastify/swagger](https://github.com/fastify/fastify-swagger)
 
 If you use fastify.js, you usually generate json-schema for validation and swagger documentation. You can write json-schema or use [fluent-json-schema](https://github.com/fastify/fluent-json-schema). simple-tjscli is third option to write json-schema. [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator) is great tool for typescript interface convert json-schema. simple-tjscli help to conversion using vega/ts-json-schema-generator.
 
@@ -47,6 +47,40 @@ npm install
 
 # run simple-tjscli watch mode
 npm run tjs-w
+```
+
+# Conversion
+TypeScript interface.
+
+```ts
+export interface Song {
+  /**
+   * song name
+   * @minLength 2
+   * @maxLength 256
+   * */
+  name: string;
+
+  /**
+   * song length represent using second unit
+   * @type integer
+   * @maximum 1200
+   * */
+  seconds: string;
+}
+```
+
+JSON schema converted.
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "song name", "minLength": 2, "maxLength": 256 },
+    "seconds": { "type": "string", "description": "song length represent using second unit", "maximum": 1200 }
+  },
+  "required": ["name", "seconds"]
+}
 ```
 
 # Recommand configuration
