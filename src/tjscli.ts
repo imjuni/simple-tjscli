@@ -397,7 +397,7 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
         return;
       }
 
-      const diagnostics = sourceFile.getPreEmitDiagnostics();
+      const diagnostics = currentProject.pass.getPreEmitDiagnostics();
       const diagnosticFiles = diagnostics
         .map((diagnostic) => diagnostic.getSourceFile())
         .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
