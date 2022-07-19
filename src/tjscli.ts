@@ -76,19 +76,21 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     throw sourceFiles.fail;
   }
 
-  const diagnostics = project.pass.getPreEmitDiagnostics();
-  const diagnosticFiles = diagnostics
-    .map((diagnostic) => diagnostic.getSourceFile())
-    .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
-    .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
-    .reduce((filePathSet, diagnosticFilePath) => {
-      filePathSet.add(diagnosticFilePath);
-      return filePathSet;
-    }, new Set<string>());
+  if (isFalse(option.skipError)) {
+    const diagnostics = project.pass.getPreEmitDiagnostics();
+    const diagnosticFiles = diagnostics
+      .map((diagnostic) => diagnostic.getSourceFile())
+      .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+      .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+      .reduce((filePathSet, diagnosticFilePath) => {
+        filePathSet.add(diagnosticFilePath);
+        return filePathSet;
+      }, new Set<string>());
 
-  if (diagnosticFiles.size > 0) {
-    consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
-    throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    if (diagnosticFiles.size > 0) {
+      consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+      throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    }
   }
 
   consola.info('source files: ', sourceFiles.pass.map((sourceFile) => colors.yellow(sourceFile)).join(', '));
@@ -239,19 +241,21 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
     throw project.fail;
   }
 
-  const diagnostics = project.pass.getPreEmitDiagnostics();
-  const diagnosticFiles = diagnostics
-    .map((diagnostic) => diagnostic.getSourceFile())
-    .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
-    .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
-    .reduce((filePathSet, diagnosticFilePath) => {
-      filePathSet.add(diagnosticFilePath);
-      return filePathSet;
-    }, new Set<string>());
+  if (isFalse(option.skipError)) {
+    const diagnostics = project.pass.getPreEmitDiagnostics();
+    const diagnosticFiles = diagnostics
+      .map((diagnostic) => diagnostic.getSourceFile())
+      .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+      .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+      .reduce((filePathSet, diagnosticFilePath) => {
+        filePathSet.add(diagnosticFilePath);
+        return filePathSet;
+      }, new Set<string>());
 
-  if (diagnosticFiles.size > 0) {
-    consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
-    throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    if (diagnosticFiles.size > 0) {
+      consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+      throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+    }
   }
 
   // If your set interactive true and type, filename is empty trigger interactive cli
@@ -397,19 +401,21 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
         return;
       }
 
-      const diagnostics = currentProject.pass.getPreEmitDiagnostics();
-      const diagnosticFiles = diagnostics
-        .map((diagnostic) => diagnostic.getSourceFile())
-        .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
-        .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
-        .reduce((filePathSet, diagnosticFilePath) => {
-          filePathSet.add(diagnosticFilePath);
-          return filePathSet;
-        }, new Set<string>());
+      if (isFalse(option.skipError)) {
+        const diagnostics = currentProject.pass.getPreEmitDiagnostics();
+        const diagnosticFiles = diagnostics
+          .map((diagnostic) => diagnostic.getSourceFile())
+          .filter((diagnosticSourceFile): diagnosticSourceFile is tsm.SourceFile => isNotEmpty(diagnosticSourceFile))
+          .map((diagnosticSourceFile) => diagnosticSourceFile.getSourceFile().getFilePath().toString())
+          .reduce((filePathSet, diagnosticFilePath) => {
+            filePathSet.add(diagnosticFilePath);
+            return filePathSet;
+          }, new Set<string>());
 
-      if (diagnosticFiles.size > 0) {
-        consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
-        return;
+        if (diagnosticFiles.size > 0) {
+          consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+          return;
+        }
       }
 
       const optionWithFiles = { ...option, f: [filePath], files: [filePath] };

@@ -64,6 +64,9 @@ export default interface ICommonOption {
   /** watching debounce time */
   debounceTime?: number;
 
+  /** skip compiler error */
+  skipError: boolean;
+
   /** verbose message */
   v: boolean;
   verbose: boolean;

@@ -8,6 +8,7 @@ import TOutputJSONSchema from '@modules/interfaces/TOutputJSONSchema';
 import { JSONSchema7 } from 'json-schema';
 import { isNotEmpty } from 'my-easy-fp';
 import { replaceSepToPosix } from 'my-node-fp';
+import { TraversalCallback, TraversalCallbackContext, traverse } from 'object-traversal';
 import path from 'path';
 import * as TJS from 'typescript-json-schema';
 
@@ -53,13 +54,30 @@ export default async function aggregateDefinitions(schemas: TOutputJSONSchema[],
     )
     .flat();
 
-  const definitionMap = definitions.reduce<Record<string, number>>((aggregation, definition) => {
-    if (aggregation[definition.typeName] !== undefined && aggregation[definition.typeName] !== null) {
-      return { ...aggregation, [definition.typeName]: aggregation[definition.typeName] + 1 };
+  const traverseHandle: TraversalCallback = ({ parent, key, value }: TraversalCallbackContext): any => {
+    if (parent !== undefined && parent !== null && key !== undefined && key !== null && key === '$ref') {
+      // eslint-disable-next-line no-param-reassign
+      parent[key] = value.replace('#/definitions/', '');
     }
 
-    return { ...aggregation, [definition.typeName]: 0 };
-  }, {});
+    return parent;
+  };
+
+  const changeExternalDefinitionJSONSchemas = definitions.map((schema) => {
+    traverse(schema.schema, traverseHandle);
+    return schema;
+  });
+
+  const definitionMap = changeExternalDefinitionJSONSchemas.reduce<Record<string, number>>(
+    (aggregation, definition) => {
+      if (aggregation[definition.typeName] !== undefined && aggregation[definition.typeName] !== null) {
+        return { ...aggregation, [definition.typeName]: aggregation[definition.typeName] + 1 };
+      }
+
+      return { ...aggregation, [definition.typeName]: 0 };
+    },
+    {},
+  );
 
   const errorTypeNames = Object.entries(definitionMap)
     .filter(([, count]) => {

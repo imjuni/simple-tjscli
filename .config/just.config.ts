@@ -71,6 +71,11 @@ task('+pub:prod', async () => {
   await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
 });
 
+task('+pub:prod:beta', async () => {
+  const cmd = 'npm publish --registry https://registry.npmjs.org --access=public --tag beta';
+  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+});
+
 task('+pub:dev', async () => {
   const cmd = 'npm publish --registry http://localhost:8901 --force';
   await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
@@ -78,6 +83,7 @@ task('+pub:dev', async () => {
 
 task('build', series('clean', '+build'));
 task('dts-bundle', series('+dts-bundle', 'clean:dts'));
+task('pub:prod:beta', series('clean', '+webpack:prod', '+dts-bundle', 'clean:dts', '+pub:prod:beta'));
 task('pub:prod', series('clean', '+webpack:prod', '+dts-bundle', 'clean:dts', '+pub:prod'));
 task('pub:dev', series('clean', '+webpack:dev', '+dts-bundle', 'clean:dts', '+pub:dev'));
 task('webpack:dev', series('clean', '+webpack:dev', '+dts-bundle', 'clean:dts'));

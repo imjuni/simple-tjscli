@@ -1,12 +1,13 @@
 {
   "name": "simple-tjscli",
-  "version": "1.0.9",
+  "version": "1.1.1",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "test": "just --config ./.config/just.config.ts test",
     "coverage": "just --config ./.config/just.config.ts coverage",
     "clean": "just --config ./.config/just.config.ts clean",
     "pub:prod": "just --config ./.config/just.config.ts pub:prod",
+    "pub:prod:beta": "just --config ./.config/just.config.ts pub:prod:beta",
     "pub:dev": "just --config ./.config/just.config.ts pub:dev",
     "build": "just --config ./.config/just.config.ts build",
     "webpack:prod": "just --config ./.config/just.config.ts webpack:prod",
