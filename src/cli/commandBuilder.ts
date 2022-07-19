@@ -75,6 +75,11 @@ export default function commandBuilder<T extends ITjsOption | ITsjOption>(args: 
       describe: "if you outputType set 'ts', templatePath option usnig typescript source code template",
       type: 'string',
     })
+    .option('skipError', {
+      describe: '',
+      type: 'boolean',
+      default: false,
+    })
     .option('verbose', {
       alias: 'v',
       describe: 'verbose message',

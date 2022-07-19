@@ -41,6 +41,7 @@ export default function getCliTjsOption(
     sync: argv.s ?? argv.sync ?? rawConfig.sync ?? false,
     template: argv.template ?? rawConfig.template ?? undefined,
     templatePath: argv.templatePath ?? rawConfig.templatePath ?? undefined,
+    skipError: argv.skipError ?? rawConfig.skipError ?? false,
     overwrite: argv.overwrite ?? rawConfig.overwrite ?? undefined,
     v: argv.v ?? argv.verbose ?? rawConfig.verbose ?? false,
     verbose: argv.v ?? argv.verbose ?? rawConfig.verbose ?? false,

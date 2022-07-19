@@ -42,6 +42,7 @@ export default function getRequiredTsjOption(
     extName: originConfig.extName ?? '.ts',
     watch: originConfig.watch ?? undefined,
     debounceTime: originConfig.debounceTime ?? 1000,
+    skipError: originConfig.skipError ?? false,
 
     // ITsjOption
     seperateDefinitions: originConfig.seperateDefinitions ?? false,

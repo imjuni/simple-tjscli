@@ -30,6 +30,7 @@ export const tsjOption: ITsjOption = {
   e: '.ts',
   extName: '.ts',
   overwrite: false,
+  skipError: false,
 
   generator: 'tsj',
   skipTypeCheck: true,
@@ -64,6 +65,7 @@ export const tjsOption: ITjsOption = {
   e: '.ts',
   extName: '.ts',
   overwrite: false,
+  skipError: false,
 
   generator: 'tjs',
 };
