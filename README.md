@@ -4,14 +4,65 @@
 
 simple-tjscli is interactive cli tool for JSONSchema generation from TypeScript interface. simple-tjscli using two generator that [YousefED/typescript-json-schema](https://github.com/YousefED/typescript-json-schema) and [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator). You can select one tool after generate JSONSchema from TypeScript interface.
 
-# Why tjscli?
+# Only One Time 🙆
+You define TypeScript interface, That is converted JSON schema.
 
-- convenient: tjscli provide interactive cli interface and variety option
-- [fastify](https://www.fastify.io/): optimize for fastify, [@fastify/swagger](https://github.com/fastify/fastify-swagger)
+```ts
+export interface Song {
+  /**
+   * song name
+   * @minLength 2
+   * @maxLength 256
+   * */
+  name: string;
 
-If you use fastify.js, you usually generate json-schema for validation and swagger documentation. You can write json-schema or use [fluent-json-schema](https://github.com/fastify/fluent-json-schema). simple-tjscli is third option to write json-schema. [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator) is great tool for typescript interface convert json-schema. simple-tjscli help to conversion using vega/ts-json-schema-generator.
+  /**
+   * song length represent using second unit
+   * @type integer
+   * @maximum 1200
+   * */
+  seconds: string;
+}
+```
 
-# install
+This TypeScript interface generate JSON schema below,
+
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": { "type": "string", "description": "song name", "minLength": 2, "maxLength": 256 },
+    "seconds": { "type": "string", "description": "song length represent using second unit", "maximum": 1200 }
+  },
+  "required": ["name", "seconds"]
+}
+```
+
+Also You can create TypeScript variable like that(you can set TypeScript template),
+
+```ts
+import { JSONSchema7 } from 'json-schema';
+
+const Song = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  type: "object",
+  properties: {
+    name: { type: "string", description: "song name", minLength: 2, maxLength: 256 },
+    seconds: { type: "string", description: "song length represent using second unit", maximum: 1200 }
+  },
+  required: ["name", "seconds"]
+}
+
+export default Song;
+```
+
+Yes, simple-tjscli on counter part of [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts). 
+
+# fastify.js
+IF you use [fastify.js](https://www.fastify.io), simple-tjscli is a good parter to management of schemas. simple-tjscli generate definitions for addSchema function. So you define TypeScript interface after generate validation and [@fastify/swagger](https://github.com/fastify/fastify-swagger). Yes, simple-tjscli is a one of option like [fluent-json-schema](https://github.com/fastify/fluent-json-schema), [typebox](https://github.com/sinclairzx81/typebox), [json-schema-to-ts](https://github.com/ThomasAribart/json-schema-to-ts)
+
+# Install
 ```bash
 npm install simple-tjscli --save-dev
 ```
@@ -48,101 +99,6 @@ npm install
 # run simple-tjscli watch mode
 npm run tjs-w
 ```
-
-# Conversion
-TypeScript interface.
-
-```ts
-export interface Song {
-  /**
-   * song name
-   * @minLength 2
-   * @maxLength 256
-   * */
-  name: string;
-
-  /**
-   * song length represent using second unit
-   * @type integer
-   * @maximum 1200
-   * */
-  seconds: string;
-}
-```
-
-JSON schema converted.
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "name": { "type": "string", "description": "song name", "minLength": 2, "maxLength": 256 },
-    "seconds": { "type": "string", "description": "song length represent using second unit", "maximum": 1200 }
-  },
-  "required": ["name", "seconds"]
-}
-```
-
-# Recommand configuration
-
-## fastify
-1. create .tjsclirc
-```jsonc
-{
-  "cwd": "./src/dto",
-  "project": "tsconfig.json",
-  "watch": ".", // watch directory base on cwd directory
-
-  // output directory and template
-  "output": "../schemas", // output directory base on cwd directory
-  "outputType": "ts",
-  "template": "import { JSONSchema7 } from 'json-schema';\\n \\n const %{{VARIABLE_NAME}}%: JSONSchema7 = %{{JSON_SCHEMA_CONTENT}}%;\\n\\n\\nexport default %{{VARIABLE_NAME}}%;\\n",
-
-  // ts-json-schema-generator mode option
-  "sync": true,
-  "seperateDefinitions": true,
-
-  // ts-json-schema-generator option
-  "topRef": false,
-  "jsDoc": "extended",
-  "expose": "all",
-  "additionalProperties": true  
-}
-```
-
-2. add schema at fastify
-add definitions on fastify
-```ts
-const fastify = Fastify();
-
-const definitionLoaded = await import('src/schemas/definitions/definitions')
-const definitions = definitionLoaded.default;
-
-Object.entries(definitions).forEach(([key, defintion]) => {
-  fastify.addSchema({
-    $id: key,
-    ...defintion,
-  });
-});
-```
-
-3. add definitions on @fastify/swagger
-```ts
-import definitions from 'src/schemas/definitions/definitions';
-
-fastify.register(fastifySwagger, {
-  // ...your swagger configuration
-  definitions,
-})
-```
-
-Then, you run command below.
-
-```bash
-$ ./node_modules/.bin/tjscli tsj-w --overwrite --config .tjsclirc --watch ./src/dto
-```
-
-You can found auto generated json-schema file in output directory.
 
 # Options
 
