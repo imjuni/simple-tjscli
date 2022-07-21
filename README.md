@@ -5,7 +5,7 @@
 simple-tjscli is interactive cli tool for JSONSchema generation from TypeScript interface. simple-tjscli using two generator that [YousefED/typescript-json-schema](https://github.com/YousefED/typescript-json-schema) and [vega/ts-json-schema-generator](https://github.com/vega/ts-json-schema-generator). You can select one tool after generate JSONSchema from TypeScript interface.
 
 # Only One Time 🙆
-You define TypeScript interface, That is converted JSON schema.
+TypeScript interface convert to JSON schema.
 
 ```ts
 export interface Song {
@@ -25,7 +25,7 @@ export interface Song {
 }
 ```
 
-This TypeScript interface generate JSON schema below,
+JSON schema generate from interface below,
 
 ```json
 {
@@ -39,7 +39,7 @@ This TypeScript interface generate JSON schema below,
 }
 ```
 
-Also You can create TypeScript variable like that(you can set TypeScript template),
+Also You can create TypeScript variable like that(apply TypeScript template),
 
 ```ts
 import { JSONSchema7 } from 'json-schema';
@@ -60,7 +60,17 @@ export default Song;
 Yes, simple-tjscli on counter part of [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts). 
 
 # fastify.js
-IF you use [fastify.js](https://www.fastify.io), simple-tjscli is a good parter to management of schemas. simple-tjscli generate definitions for addSchema function. So you define TypeScript interface after generate validation and [@fastify/swagger](https://github.com/fastify/fastify-swagger). Yes, simple-tjscli is a one of option like [fluent-json-schema](https://github.com/fastify/fluent-json-schema), [typebox](https://github.com/sinclairzx81/typebox), [json-schema-to-ts](https://github.com/ThomasAribart/json-schema-to-ts)
+If you use [fastify.js](https://www.fastify.io), simple-tjscli is a good parter to management of schemas. simple-tjscli generate definitions for addSchema function. So you define TypeScript interface after generate validation and [@fastify/swagger](https://github.com/fastify/fastify-swagger). Yes, simple-tjscli is a one of option like [fluent-json-schema](https://github.com/fastify/fluent-json-schema), [typebox](https://github.com/sinclairzx81/typebox), [json-schema-to-ts](https://github.com/ThomasAribart/json-schema-to-ts)
+
+```mermaid
+graph LR
+    A[TypeScript <br />interface] -->|simple-tjscli| B[JSON schema]
+    B -->|route| C[fastify.js]
+    C -->|ajv| D[validateion <br />Request/Response <br />DTO]
+    C -->|"@"fastify/swagger| E[Swagger.io <br />Documentation]
+```
+
+Only One conversion
 
 # Install
 ```bash
