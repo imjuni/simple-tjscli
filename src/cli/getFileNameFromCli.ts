@@ -27,6 +27,7 @@ export default async function getFileNameFromCli(option: ICommonOption) {
       : tsFiles;
   const fuse = new Fuse(excludePrefix, { includeScore: true });
 
+  const fuzzyLimit = 40;
   const answer = await inquirer.prompt<IPromptAnswerSelectFile>([
     {
       type: 'autocomplete',
@@ -55,7 +56,7 @@ export default async function getFileNameFromCli(option: ICommonOption) {
                 .toNumber(),
             };
           })
-          .filter((matched) => matched.percent > 80)
+          .filter((matched) => matched.percent > fuzzyLimit)
           .sort((l, r) => r.percent - l.percent)
           .map((matched) => matched.item);
       },
