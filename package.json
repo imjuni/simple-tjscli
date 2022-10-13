@@ -1,6 +1,6 @@
 {
   "name": "simple-tjscli",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "Create JSONSchema from typescript interface using creation engine",
   "scripts": {
     "test": "jest --colors --verbose --config ./.configs/jest.config.js",
@@ -26,8 +26,9 @@
   "private": false,
   "author": "ByungJoon Lee",
   "license": "MIT",
-  "main": "dist/tjscli.js",
-  "typings": "dist/tjscli.d.ts",
+  "main": "dist/cjs/tjscli.js",
+  "typings": "dist/esm/tjscli.d.ts",
+  "module": "dist/esm/tjscli.js",
   "bin": {
     "tjscli": "dist/cli.js"
   },
