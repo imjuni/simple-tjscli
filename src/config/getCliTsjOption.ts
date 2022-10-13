@@ -15,7 +15,6 @@ export default function getCliTjsOption(
     generator: 'tsj',
 
     // ICommonOption
-    // ICommonOption
     w: argv.w ?? argv.cwd ?? rawConfig.cwd ?? getWorkingDirectory(argv.w ?? argv.cwd ?? rawConfig.cwd),
     cwd: argv.w ?? argv.cwd ?? rawConfig.cwd ?? getWorkingDirectory(argv.w ?? argv.cwd ?? rawConfig.cwd),
     c: argv.c ?? argv.config ?? rawConfig.config ?? configFilePath,

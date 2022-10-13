@@ -49,6 +49,7 @@ compile/
 package-lock.json.bak
 .modelrc
 artifact/
+.eslintcache
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
