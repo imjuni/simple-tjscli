@@ -30,6 +30,6 @@
     "editor.formatOnSave": true
   },
   "git.ignoreLimitWarning": true,
-  "jest.jestCommandLine": ".\\node_modules\\.bin\\jest --config ./.config/jest.config.js",
+  "jest.jestCommandLine": "npm run test --",
   "jest.rootPath": "."
 }

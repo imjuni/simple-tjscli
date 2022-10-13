@@ -33,16 +33,6 @@ task('lint', async () => {
   }
 });
 
-task('test', async () => {
-  const cmd = 'jest --colors --verbose --config ./.config/jest.config.js';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
-});
-
-task('coverage', async () => {
-  const cmd = 'jest --coverage --color --fail-fast --verbose --config ./.config/jest.config.js';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
-});
-
 task('dev', async () => {
   const cmd = `ts-node ./src/cli.ts ${argv()._[1]} ${process.argv
     .slice(2)
