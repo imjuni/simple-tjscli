@@ -1,74 +1,101 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { argv, option, series, task } from 'just-scripts';
-import { exec } from 'just-scripts-utils';
+import execa from 'execa';
+import { series, task } from 'just-task';
 
-option('env', { default: { env: process.env.RUN_MODE } });
+function splitArgs(args: string): string[] {
+  return args
+    .split(' ')
+    .map((arg) => arg.trim())
+    .filter((arg) => arg != '');
+}
 
 task('clean', async () => {
-  const cmd = 'rimraf dist artifact';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'rimraf';
+  const option = 'dist artifact';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('clean:dts', async () => {
-  const cmd = 'rimraf dist/src dist/example';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'rimraf';
+  const option = 'dist/src dist/example';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('+build', async () => {
-  const cmd = 'tsc -p tsconfig.json --incremental';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'tsc';
+  const option = '-p tsconfig.json --incremental';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('debug', async () => {
-  const cmd = 'node -r ts-node/register --inspect-brk --nolazy src/cli.ts';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'node';
+  const option = '-r ts-node/register --inspect-brk --nolazy src/cli.ts';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('lint', async () => {
-  const cmd = 'eslint --no-ignore --ext ts,tsx,json ./src/**/*';
-  const resp = await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'eslint';
+  const option = '--cache .';
 
-  if (resp !== '') {
-    throw new Error(`lint error: \n${resp}`);
-  }
-});
-
-task('dev', async () => {
-  const cmd = `ts-node ./src/cli.ts ${argv()._[1]} ${process.argv
-    .slice(2)
-    .filter((argvElement) => argvElement !== 'tjs' && argvElement !== 'tjs')
-    .join(' ')}`;
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('+webpack:prod', async () => {
-  const cmd = 'cross-env NODE_ENV=production webpack --config ./.config/webpack.config.prod.js';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'webpack';
+  const option = '--config ./.config/webpack.config.prod.js';
+
+  await execa(cmd, splitArgs(option), {
+    env: {
+      NODE_ENV: 'production',
+    },
+    stderr: process.stderr,
+    stdout: process.stdout,
+  });
 });
 
 task('+dts-bundle', async () => {
-  const cmd = 'dts-bundle-generator --no-banner dist/src/tjscli.d.ts -o dist/tjscli.d.ts';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'dts-bundle-generator';
+  const option = '--no-banner dist/src/tjscli.d.ts -o dist/tjscli.d.ts';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('+webpack:dev', async () => {
-  const cmd = 'cross-env NODE_ENV=production webpack --config ./.config/webpack.config.dev.js';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'webpack';
+  const option = '--config ./.config/webpack.config.dev.js';
+
+  await execa(cmd, splitArgs(option), {
+    env: {
+      NODE_ENV: 'production',
+    },
+    stderr: process.stderr,
+    stdout: process.stdout,
+  });
 });
 
 task('+pub:prod', async () => {
-  const cmd = 'npm publish --registry https://registry.npmjs.org --access=public';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'npm';
+  const option = 'publish --registry https://registry.npmjs.org --access=public';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('+pub:prod:beta', async () => {
-  const cmd = 'npm publish --registry https://registry.npmjs.org --access=public --tag beta';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'npm';
+  const option = 'publish --registry https://registry.npmjs.org --access=public --tag beta';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('+pub:dev', async () => {
-  const cmd = 'npm publish --registry http://localhost:8901 --force';
-  await exec(cmd, { stderr: process.stderr, stdout: process.stdout });
+  const cmd = 'npm';
+  const option = 'publish --registry http://localhost:8901 --force';
+
+  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });
 
 task('build', series('clean', '+build'));

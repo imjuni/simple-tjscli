@@ -15,7 +15,8 @@
     "dts-bundle": "just --config ./.configs/just.config.ts dts-bundle",
     "lint": "just --config ./.configs/just.config.ts lint",
     "dev": "ts-node ./src/cli.ts",
-    "debug": "node -r ts-node/register --inspect-brk --nolazy src/cli.ts"
+    "debug": "node -r ts-node/register --inspect-brk --nolazy src/cli.ts",
+    "deps-diff": "deps-diff md -d dev -d prod"
   },
   "repository": {
     "type": "git",
@@ -51,6 +52,7 @@
     "@typescript-eslint/eslint-plugin-tslint": "^5.29.0",
     "@typescript-eslint/parser": "^5.29.0",
     "cross-env": "^7.0.3",
+    "deps-diff": "^0.6.0",
     "dts-bundle-generator": "^6.12.0",
     "eslint": "^8.18.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
@@ -59,8 +61,9 @@
     "eslint-plugin-jsdoc": "^39.3.3",
     "eslint-plugin-prefer-arrow": "^1.2.3",
     "eslint-plugin-prettier": "^4.0.0",
+    "execa": "^5.1.1",
     "jest": "^28.1.1",
-    "just-scripts": "^2.0.0",
+    "just-task": "^1.6.1",
     "prettier-eslint": "^15.0.1",
     "prettier-plugin-organize-imports": "^3.0.0",
     "rimraf": "3.0.2",
