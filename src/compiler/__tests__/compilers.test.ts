@@ -41,7 +41,7 @@ test('t002-getExportTypes', async () => {
   const types = ['ICollege'];
   const option = { ...env.tsjOption, t: types, types };
   const testFileName = posixJoin(env.exampleType01Path, 'ICollege.ts');
-  const expectFileName = expect.getState().currentTestName.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts');
+  const expectFileName = expect.getState().currentTestName?.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts') ?? '';
 
   const result = getExportTypes({ project: share.project01, sourceFiles: [testFileName], option });
 

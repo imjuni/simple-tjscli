@@ -26,7 +26,7 @@ test('t001-generateJSONSchemaByTSJ', async () => {
   const option = { ...env.tsjOption };
   const testFileName = 'ICollege.ts';
   const testFilePath = posixJoin(env.exampleType01Path, testFileName);
-  const expectFileName = expect.getState().currentTestName.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts');
+  const expectFileName = expect.getState().currentTestName?.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts') ?? '';
 
   option.f = [testFilePath];
   option.files = [testFilePath];
@@ -61,7 +61,7 @@ test('t002-generateJSONSchemaByTJS', async () => {
   const option = { ...env.tjsOption };
   const testFileName = 'ICollege.ts';
   const testFilePath = posixJoin(env.exampleType01Path, testFileName);
-  const expectFileName = expect.getState().currentTestName.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts');
+  const expectFileName = expect.getState().currentTestName?.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts') ?? '';
 
   option.f = [testFilePath];
   option.files = [testFilePath];
