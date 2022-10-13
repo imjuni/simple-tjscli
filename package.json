@@ -16,7 +16,10 @@
     "lint": "just --config ./.configs/just.config.ts lint",
     "dev": "ts-node ./src/cli.ts",
     "debug": "node -r ts-node/register --inspect-brk --nolazy src/cli.ts",
-    "deps-diff": "deps-diff md -d dev -d prod"
+    "deps-diff": "deps-diff md -d dev -d prod",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:serve": "vitepress serve docs"
   },
   "repository": {
     "type": "git",
@@ -72,6 +75,8 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.0",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
+    "vitepress": "^1.0.0-alpha.20",
+    "vue": "^3.2.40",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0",
     "webpack-merge": "^5.8.0",
