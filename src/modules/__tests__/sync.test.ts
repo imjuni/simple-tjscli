@@ -31,7 +31,7 @@ beforeAll(async () => {
 
 test('t001-getOutputSchemaFile-case01', async () => {
   const option = { ...env.tsjOption };
-  const expectFileName = expect.getState().currentTestName.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts');
+  const expectFileName = expect.getState().currentTestName?.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts') ?? '';
 
   option.f = [posixJoin(env.exampleType01Path, 'ICollege.ts'), posixJoin(env.exampleType01Path, 'sub', 'IStudent.ts')];
   option.files = [...option.f];
@@ -92,7 +92,7 @@ test('t001-getOutputSchemaFile-case01', async () => {
 
 test('t002-moveTopRef-case01', async () => {
   const option = { ...env.tsjOption };
-  const expectFileName = expect.getState().currentTestName.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts');
+  const expectFileName = expect.getState().currentTestName?.replace(/^([tT][0-9]+)(-.+)/, 'expect$2.ts') ?? '';
 
   option.f = [posixJoin(env.exampleType01Path, 'sub', 'TStudentResp.ts')];
   option.files = [...option.f];
