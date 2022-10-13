@@ -22,9 +22,9 @@ import loadTemplate from '@modules/loadTemplate';
 import moveTopRef from '@modules/moveTopRef';
 import writeDefinitionModule from '@modules/writeDefinitionModule';
 import writeSchema from '@modules/writeSchema';
+import logger from '@tools/logger';
 import chokidar from 'chokidar';
 import colors from 'colors';
-import consola, { LogLevel } from 'consola';
 import fs from 'fs';
 import { isEmpty, isError, isFalse, isNotEmpty } from 'my-easy-fp';
 import { exists, existsSync, getDirnameSync, replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
@@ -35,15 +35,17 @@ import * as rx from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import * as tsm from 'ts-morph';
 
+const log = logger();
+
 export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
 
-  if (isFalse(isMessageDisplay ?? false)) {
-    consola.level = LogLevel.Error;
+  if ((isMessageDisplay ?? false) === false) {
+    log.level = 'error';
   } else if (verbose) {
-    consola.level = LogLevel.Debug;
+    log.level = 'verbose';
   } else {
-    consola.level = LogLevel.Success;
+    log.level = 'info';
   }
 
   const { cwd } = baseOption;
@@ -56,7 +58,7 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
   const option = { ...baseOption, ...resolvedPath, cwd: resolvedPath.resolvedCwd };
 
-  consola.info(`cwd: "${colors.yellow(option.resolvedCwd)}"`);
+  log.info(`cwd: "${colors.yellow(option.resolvedCwd)}"`);
 
   const project = getTsProject(option);
 
@@ -88,12 +90,12 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
       }, new Set<string>());
 
     if (diagnosticFiles.size > 0) {
-      consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+      log.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
       throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
     }
   }
 
-  consola.info('source files: ', sourceFiles.pass.map((sourceFile) => colors.yellow(sourceFile)).join(', '));
+  log.info('source files: ', sourceFiles.pass.map((sourceFile) => colors.yellow(sourceFile)).join(', '));
 
   // If your set interactive true and type, filename is empty trigger interactive cli
   if (option.types.length <= 0 && isMessageDisplay && option.interactive) {
@@ -111,7 +113,7 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     throw new Error('SourceFile, Type not founed');
   }
 
-  consola.info(
+  log.info(
     'exported types: ',
     exportedTypes.pass
       .map((exportedType) =>
@@ -143,7 +145,7 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     .map((schema) => moveTopRef(schema.pass))
     .map((schema) => getOutputSchemaFile(schema, option));
 
-  consola.success(`schema ${colors.yellow('generation')} successed!`);
+  log.info(`schema ${colors.yellow('generation')} successed!`);
 
   if (option.seperateDefinitions) {
     const traverseHandle: TraversalCallback = ({ parent, key, value }: TraversalCallbackContext): any => {
@@ -177,11 +179,9 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
     await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
-    prettierApplied.map((schema) =>
-      consola.success(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`),
-    );
+    prettierApplied.map((schema) => log.info(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`));
 
-    consola.success(`schema ${colors.yellow('write')} successed!`);
+    log.info(`schema ${colors.yellow('write')} successed!`);
 
     const definitionSchemas = await aggregateDefinitions(prettierApplied, { ...option, template });
     await Promise.all(definitionSchemas.definitions.map((schema) => writeSchema(schema, option)));
@@ -189,7 +189,7 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
     const definitionModuleFile = await getDefinitions(project.pass, option);
     await writeDefinitionModule(definitionModuleFile, option);
 
-    consola.success(`schema ${colors.yellow('definition')} successed!`);
+    log.info(`schema ${colors.yellow('definition')} successed!`);
 
     return;
   }
@@ -211,18 +211,18 @@ export async function generateJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessa
 
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
-  consola.success(`schema ${colors.yellow('write')} successed!`);
+  log.info(`schema ${colors.yellow('write')} successed!`);
 }
 
 export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
 
-  if (isFalse(isMessageDisplay ?? false)) {
-    consola.level = LogLevel.Error;
+  if ((isMessageDisplay ?? false) === false) {
+    log.level = 'error';
   } else if (verbose) {
-    consola.level = LogLevel.Debug;
+    log.level = 'verbose';
   } else {
-    consola.level = LogLevel.Success;
+    log.level = 'info';
   }
 
   const { cwd } = baseOption;
@@ -253,7 +253,7 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
       }, new Set<string>());
 
     if (diagnosticFiles.size > 0) {
-      consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+      log.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
       throw new Error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
     }
   }
@@ -320,20 +320,18 @@ export async function generateJSONSchemaUsingTJS(baseOption: ITjsOption, isMessa
 
   await Promise.all(prettierApplied.map((schema) => writeSchema(schema, option)));
 
-  prettierApplied.map((schema) =>
-    consola.success(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`),
-  );
+  prettierApplied.map((schema) => log.info(`schema ${colors.yellow(`${schema.outputFilePath}`)} write successed!`));
 }
 
 export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay?: boolean) {
   const verbose = baseOption.verbose ?? false;
 
-  if (isFalse(isMessageDisplay ?? false)) {
-    consola.level = LogLevel.Error;
+  if ((isMessageDisplay ?? false) === false) {
+    log.level = 'error';
   } else if (verbose) {
-    consola.level = LogLevel.Debug;
+    log.level = 'verbose';
   } else {
-    consola.level = LogLevel.Success;
+    log.level = 'info';
   }
 
   const watchDir = baseOption.watch;
@@ -350,8 +348,8 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
     throw new Error(`Cannot found watch directory: ${resolvedWatchDir}`);
   }
 
-  consola.success('Watch command start!');
-  consola.info(`watching: ${colors.yellow(resolvedWatchDir)} ...`);
+  log.info('Watch command start!');
+  log.info(`watching: ${colors.yellow(resolvedWatchDir)} ...`);
 
   const resolvedPath: IResolvePath = {
     resolvedCwd: replaceSepToPosix(path.resolve(cwd)),
@@ -390,14 +388,14 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
       const currentProject = getTsProject(option);
 
       if (isFail(currentProject)) {
-        consola.error(`Error initialize project: ${colors.yellow(option.project)}`);
+        log.error(`Error initialize project: ${colors.yellow(option.project)}`);
         return;
       }
 
       const sourceFile = currentProject.pass.getSourceFile(path.basename(filePath));
 
       if (sourceFile === undefined || sourceFile === null) {
-        consola.error('Cannot found typescript source file: ', filePath);
+        log.error('Cannot found typescript source file: ', filePath);
         return;
       }
 
@@ -413,7 +411,7 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
           }, new Set<string>());
 
         if (diagnosticFiles.size > 0) {
-          consola.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
+          log.error(`Compile error from: ${Array.from(diagnosticFiles).join(', ')}`);
           return;
         }
       }
@@ -428,25 +426,25 @@ export function watchJSONSchemaUsingTSJ(baseOption: ITsjOption, isMessageDisplay
         )
         .flat();
 
-      consola.debug('input files: ', changeValue.type, changeValue.filePath);
-      consola.debug('input types: ', typeNames);
+      log.debug('input files: ', changeValue.type, changeValue.filePath);
+      log.debug('input types: ', typeNames);
 
       const optionWithTypes = { ...optionWithFiles, types: typeNames, t: typeNames };
 
       generateJSONSchemaUsingTSJ(optionWithTypes, true);
     } catch (catched) {
       const err = isError(catched) ?? new Error('');
-      consola.error(err);
+      log.error(err);
     }
   });
 
   watcher
     .on('add', (filePath) => {
-      consola.info(`file added: ${colors.yellow(filePath)}`);
+      log.info(`file added: ${colors.yellow(filePath)}`);
       subject.next({ type: 'add', filePath });
     })
     .on('change', (filePath) => {
-      consola.info(`file changed: ${colors.yellow(filePath)}`);
+      log.info(`file changed: ${colors.yellow(filePath)}`);
       subject.next({ type: 'change', filePath });
     });
 }

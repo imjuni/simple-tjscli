@@ -4,7 +4,6 @@ import consola from 'consola';
 import findUp from 'find-up';
 import fs from 'fs';
 import minimist from 'minimist';
-import { isEmpty, isFalse, isNotEmpty } from 'my-easy-fp';
 import { existsSync, getDirnameSync } from 'my-node-fp';
 
 export default function preLoadConfig() {
@@ -13,14 +12,14 @@ export default function preLoadConfig() {
     const cwd = process.cwd();
 
     const configFilePath =
-      isNotEmpty(argv.config) || isNotEmpty(argv.c) ? findUp.sync([argv.config, argv.c]) : findUp.sync('.tjsclirc');
+      argv.config != null || argv.c != null ? findUp.sync([argv.config, argv.c]) : findUp.sync('.tjsclirc');
 
     const tsconfigPath =
-      isNotEmpty(argv.project) || isNotEmpty(argv.p)
+      argv.project != null || argv.p != null
         ? findUp.sync([argv.project, argv.p], { cwd })
         : findUp.sync('tsconfig.json', { cwd });
 
-    if (isEmpty(configFilePath) || isFalse(existsSync(configFilePath))) {
+    if (configFilePath == null || existsSync(configFilePath) === false) {
       const tsconfigDirPath = getDirnameSync(tsconfigPath ?? 'tsconfig.json');
 
       return {
@@ -33,7 +32,7 @@ export default function preLoadConfig() {
       };
     }
 
-    if (isEmpty(tsconfigPath) || isFalse(existsSync(tsconfigPath))) {
+    if (tsconfigPath == null || existsSync(tsconfigPath) === false) {
       return {};
     }
 

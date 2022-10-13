@@ -6,7 +6,7 @@ import getRequiredTsjOption from '@config/getRequiredTsjOption';
 import ITjsOption from '@config/interfaces/ITjsOption';
 import ITsjOption from '@config/interfaces/ITsjOption';
 import preLoadConfig from '@config/preLoadConfig';
-import consola, { LogLevel } from 'consola';
+import logger from '@tools/logger';
 import { isError } from 'my-easy-fp';
 import yargsAnyType, { Argv } from 'yargs';
 import { generateJSONSchemaUsingTJS, generateJSONSchemaUsingTSJ, watchJSONSchemaUsingTSJ } from './tjscli';
@@ -15,10 +15,9 @@ import { generateJSONSchemaUsingTJS, generateJSONSchemaUsingTSJ, watchJSONSchema
 // fast-maker cli option interface type. So we make concrete type yargs instance
 // make using by any type.
 const yargs: Argv<ITsjOption | ITjsOption> = yargsAnyType as any;
-consola.level = LogLevel.Success;
+const log = logger();
 
-// eslint-disable-next-line
-const argv = yargs(process.argv.slice(2))
+const parser = yargs(process.argv.slice(2))
   .command<ITsjOption>({
     command: 'tsj',
     builder: (args) => {
@@ -32,7 +31,7 @@ const argv = yargs(process.argv.slice(2))
         await generateJSONSchemaUsingTSJ(option, true);
       } catch (catched) {
         const err = isError(catched) ?? new Error('unknown error raised');
-        consola.error(err);
+        log.error(err);
       }
     },
   })
@@ -47,7 +46,7 @@ const argv = yargs(process.argv.slice(2))
         await generateJSONSchemaUsingTJS(option, true);
       } catch (catched) {
         const err = isError(catched) ?? new Error('unknown error raised');
-        consola.error(err);
+        log.error(err);
       }
     },
   })
@@ -64,7 +63,7 @@ const argv = yargs(process.argv.slice(2))
         watchJSONSchemaUsingTSJ(option, true);
       } catch (catched) {
         const err = isError(catched) ?? new Error('unknown error raised');
-        consola.error(err);
+        log.error(err);
       }
     },
   })
@@ -72,8 +71,9 @@ const argv = yargs(process.argv.slice(2))
   .recommendCommands()
   .demandOption(['project'])
   .config(preLoadConfig())
-  .help().argv;
+  .help();
 
-consola.debug('테스트: ', 'filenames' in argv ? argv.files : 'empty');
-consola.debug('테스트: ', argv);
-consola.debug('테스트: ', process.env.DEBUG);
+(async () => {
+  await parser.argv;
+  process.exit(0);
+})();
