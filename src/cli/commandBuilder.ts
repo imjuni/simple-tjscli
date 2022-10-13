@@ -8,6 +8,7 @@ export default function commandBuilder<T extends ITjsOption | ITsjOption>(args: 
       alias: 'w',
       describe: 'tjscli script working directory',
       type: 'string',
+      default: process.cwd(),
     })
     .option('config', {
       alias: 'c',
@@ -24,33 +25,39 @@ export default function commandBuilder<T extends ITjsOption | ITsjOption>(args: 
       describe: 'input files for genrate json-schema',
       array: true,
       type: 'string',
+      default: [],
     })
     .option('types', {
       alias: 't',
       describe: 'input types for genrate json-schema',
       array: true,
       type: 'string',
+      default: [],
     })
     .option('sync', {
       alias: 's',
       describe: 'if set output directory after sync option create directory like input file directory structure',
       type: 'boolean',
+      default: false,
     })
     .option('interactive', {
       alias: 'i',
       describe: 'interactive option show interactive cli interface what files, types option is empty',
       type: 'boolean',
+      default: true,
     })
     .option('noBanner', {
       alias: 'b',
       describe: 'disable banner on top line',
       type: 'boolean',
+      default: true,
     })
     .option('outputType', {
       alias: 'u',
       describe: 'output jsonschema file type ts: typescript file, json: json file',
       choices: ['json', 'ts'],
       type: 'string',
+      default: 'json',
     })
     .option('output', {
       alias: 'o',
@@ -84,6 +91,7 @@ export default function commandBuilder<T extends ITjsOption | ITsjOption>(args: 
       alias: 'v',
       describe: 'verbose message',
       type: 'boolean',
+      default: false,
     });
 
   return args;
