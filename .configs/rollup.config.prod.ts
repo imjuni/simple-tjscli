@@ -1,8 +1,13 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import terser from '@rollup/plugin-terser';
 import readPackage from 'read-pkg';
 import ts from 'rollup-plugin-ts';
 
 const pkg = readPackage.sync();
+const resolveOnly = (module: string) =>
+  pkg?.dependencies?.[module] == null &&
+  pkg?.devDependencies?.[module] == null &&
+  pkg?.peerDependencies?.[module] == null;
 
 export default [
   {
@@ -12,12 +17,7 @@ export default [
       format: 'cjs',
       banner: '#!/usr/bin/env node',
     },
-    plugins: [
-      nodeResolve({
-        resolveOnly: (module) => pkg?.dependencies?.[module] == null && pkg?.devDependencies?.[module] == null,
-      }),
-      ts({ tsconfig: 'tsconfig.prod.json' }),
-    ],
+    plugins: [nodeResolve({ resolveOnly }), ts({ tsconfig: 'tsconfig.json' }), terser()],
   },
   {
     input: 'src/tjscli.ts',
@@ -34,17 +34,6 @@ export default [
       },
     ],
 
-    plugins: [
-      nodeResolve({
-        resolveOnly: (module) => {
-          const isLocal =
-            (pkg?.dependencies?.[module] === undefined || pkg?.dependencies?.[module] === null) &&
-            (pkg?.devDependencies?.[module] === undefined || pkg?.devDependencies?.[module] === null);
-
-          return isLocal;
-        },
-      }),
-      ts({ tsconfig: 'tsconfig.prod.json' }),
-    ],
+    plugins: [nodeResolve({ resolveOnly }), ts({ tsconfig: 'tsconfig.json' }), terser()],
   },
 ];

@@ -3,6 +3,10 @@ import readPackage from 'read-pkg';
 import ts from 'rollup-plugin-ts';
 
 const pkg = readPackage.sync();
+const resolveOnly = (module: string) =>
+  pkg?.dependencies?.[module] == null &&
+  pkg?.devDependencies?.[module] == null &&
+  pkg?.peerDependencies?.[module] == null;
 
 export default [
   {
@@ -12,12 +16,7 @@ export default [
       format: 'cjs',
       banner: '#!/usr/bin/env node',
     },
-    plugins: [
-      nodeResolve({
-        resolveOnly: (module) => pkg?.dependencies?.[module] == null && pkg?.devDependencies?.[module] == null,
-      }),
-      ts({ tsconfig: 'tsconfig.json' }),
-    ],
+    plugins: [nodeResolve({ resolveOnly }), ts({ tsconfig: 'tsconfig.json' })],
   },
   {
     input: 'src/ctix.ts',
@@ -33,17 +32,6 @@ export default [
         sourcemap: true,
       },
     ],
-    plugins: [
-      nodeResolve({
-        resolveOnly: (module) => {
-          const isLocal =
-            (pkg?.dependencies?.[module] === undefined || pkg?.dependencies?.[module] === null) &&
-            (pkg?.devDependencies?.[module] === undefined || pkg?.devDependencies?.[module] === null);
-
-          return isLocal;
-        },
-      }),
-      ts({ tsconfig: 'tsconfig.json' }),
-    ],
+    plugins: [nodeResolve({ resolveOnly }), ts({ tsconfig: 'tsconfig.json' })],
   },
 ];
