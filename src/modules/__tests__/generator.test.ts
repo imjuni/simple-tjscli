@@ -1,12 +1,13 @@
-import getExportedName from '@compiler/getExportedName';
-import generateJSONSchemaByTJS from '@modules/generateJSONSchemaByTJS';
-import generateJSONSchemaByTSJ from '@modules/generateJSONSchemaByTSJ';
-import IGeneratedJSONSchemaFromTJS from '@modules/interfaces/IGeneratedJSONSchemaFromTJS';
-import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
-import posixJoin from '@tools/posixJoin';
-import * as env from '@tools/testenv';
+import getExportedName from '#compiler/getExportedName';
+import generateJSONSchemaByTJS from '#modules/generateJSONSchemaByTJS';
+import generateJSONSchemaByTSJ from '#modules/generateJSONSchemaByTSJ';
+import type IGeneratedJSONSchemaFromTJS from '#modules/interfaces/IGeneratedJSONSchemaFromTJS';
+import type IGeneratedJSONSchemaFromTSJ from '#modules/interfaces/IGeneratedJSONSchemaFromTSJ';
+import posixJoin from '#tools/posixJoin';
+import * as env from '#tools/testenv';
 import consola, { LogLevel } from 'consola';
-import { IPass, isPass } from 'my-only-either';
+import type { IPass } from 'my-only-either';
+import { isPass } from 'my-only-either';
 import path from 'path';
 import * as tsm from 'ts-morph';
 

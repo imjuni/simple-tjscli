@@ -1,6 +1,6 @@
-import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
-import IReason from '@modules/interfaces/IReason';
-import { JSONSchema7 } from 'json-schema';
+import type IGeneratedJSONSchemaFromTSJ from '#modules/interfaces/IGeneratedJSONSchemaFromTSJ';
+import type IReason from '#modules/interfaces/IReason';
+import type { JSONSchema7 } from 'json-schema';
 
 export default function moveTopRef(generatedSchema: IGeneratedJSONSchemaFromTSJ): IGeneratedJSONSchemaFromTSJ {
   const { schema } = generatedSchema;

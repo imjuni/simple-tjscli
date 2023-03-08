@@ -4,16 +4,12 @@
     "allowJs": true
   },
   "include": [
-    ".eslintrc.js",
-    "**/*.ts",
-    "**/__test__",
-    "**/__tests__"
+    "src/**/*.ts",
+    "examples/**/*.ts",
+    ".eslintrc.cjs",
+    "jest.config.cjs",
+    "jest.config.js",
+    "prepublish.js"
   ],
-  "exclude": [
-    "node_modules",
-    "server/**",    
-    "dist/**",
-    "webpack.config.dev.ts",
-    "webpack.config.prod.ts"
-  ]
+  "exclude": ["**/node_modules/**", "**/dist/**/*", "**/.configs/**", "**/docs/**"]
 }

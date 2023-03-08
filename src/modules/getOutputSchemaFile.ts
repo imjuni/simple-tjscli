@@ -1,11 +1,11 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import ITsjOption from '@config/interfaces/ITsjOption';
-import getOutputDirPath from '@modules/getOutputDirPath';
-import getOutputFileName from '@modules/getOutputFileName';
-import IReason from '@modules/interfaces/IReason';
-import TGeneratedJSONSchema from '@modules/interfaces/TGenerateJSONSchema';
-import TOutputJSONSchema from '@modules/interfaces/TOutputJSONSchema';
-import { JSONSchema7 } from 'json-schema';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import getOutputDirPath from '#modules/getOutputDirPath';
+import getOutputFileName from '#modules/getOutputFileName';
+import type IReason from '#modules/interfaces/IReason';
+import type TGeneratedJSONSchema from '#modules/interfaces/TGenerateJSONSchema';
+import type TOutputJSONSchema from '#modules/interfaces/TOutputJSONSchema';
+import type { JSONSchema7 } from 'json-schema';
 import { existsSync } from 'my-node-fp';
 
 export default function getOutputSchemaFile(

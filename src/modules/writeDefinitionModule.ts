@@ -1,8 +1,8 @@
-import ITsjOption from '@config/interfaces/ITsjOption';
-import getDefinitions from '@modules/getDefinitions';
-import getOutputDirPath from '@modules/getOutputDirPath';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import type getDefinitions from '#modules/getDefinitions';
+import getOutputDirPath from '#modules/getOutputDirPath';
 import fs from 'fs';
-import { TResolvePromise } from 'my-easy-fp';
+import type { TResolvePromise } from 'my-easy-fp';
 import { exists } from 'my-node-fp';
 
 export default async function writeDefinitionModule(

@@ -1,8 +1,8 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import ITsjOption from '@config/interfaces/ITsjOption';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
 import posixJoin from './posixJoin';
 
-export const examplePath = posixJoin(__dirname, '..', '..', 'example');
+export const examplePath = posixJoin(__dirname, '..', '..', 'examples');
 export const exampleType01Path = posixJoin(examplePath, 'type01');
 export const exampleOutputPath = posixJoin(examplePath, 'output');
 

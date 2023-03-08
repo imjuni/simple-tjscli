@@ -1,4 +1,4 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 
 export default function getBanner(generator: 'tjs' | 'tsj', option: ICommonOption) {
   if (option.noBanner) {

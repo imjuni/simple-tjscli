@@ -1,5 +1,5 @@
-import IReason from '@modules/interfaces/IReason';
-import { JSONSchema7 } from 'json-schema';
+import type IReason from '#modules/interfaces/IReason';
+import type { JSONSchema7 } from 'json-schema';
 
 export default interface IGeneratedJSONSchemaFromTSJ {
   generator: 'tsj';

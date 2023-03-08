@@ -1,16 +1,17 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
-import applyFormat from '@modules/applyFormat';
-import applyPrettier from '@modules/applyPrettier';
-import getBanner from '@modules/getBanner';
-import getOutputDirPath from '@modules/getOutputDirPath';
-import IReason from '@modules/interfaces/IReason';
-import TOutputJSONSchema from '@modules/interfaces/TOutputJSONSchema';
-import { JSONSchema7 } from 'json-schema';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import applyFormat from '#modules/applyFormat';
+import applyPrettier from '#modules/applyPrettier';
+import getBanner from '#modules/getBanner';
+import getOutputDirPath from '#modules/getOutputDirPath';
+import type IReason from '#modules/interfaces/IReason';
+import type TOutputJSONSchema from '#modules/interfaces/TOutputJSONSchema';
+import type { JSONSchema7 } from 'json-schema';
 import { isNotEmpty } from 'my-easy-fp';
 import { replaceSepToPosix } from 'my-node-fp';
-import { TraversalCallback, TraversalCallbackContext, traverse } from 'object-traversal';
+import type { TraversalCallback, TraversalCallbackContext } from 'object-traversal';
+import { traverse } from 'object-traversal';
 import path from 'path';
-import * as TJS from 'typescript-json-schema';
+import type * as TJS from 'typescript-json-schema';
 
 export default async function aggregateDefinitions(schemas: TOutputJSONSchema[], option: ICommonOption) {
   const outputDirPath = getOutputDirPath(option);

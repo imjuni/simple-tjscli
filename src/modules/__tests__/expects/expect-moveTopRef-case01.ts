@@ -1,5 +1,5 @@
-import posixJoin from '@tools/posixJoin';
-import * as env from '@tools/testenv';
+import posixJoin from '#tools/posixJoin';
+import * as env from '#tools/testenv';
 
 export default [
   {

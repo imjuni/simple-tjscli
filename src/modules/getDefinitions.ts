@@ -1,11 +1,11 @@
-import ITsjOption from '@config/interfaces/ITsjOption';
-import getOutputDirPath from '@modules/getOutputDirPath';
-import IReason from '@modules/interfaces/IReason';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import getOutputDirPath from '#modules/getOutputDirPath';
+import type IReason from '#modules/interfaces/IReason';
 import fs from 'fs';
 import { isEmpty, isFalse, isNotEmpty } from 'my-easy-fp';
 import { exists } from 'my-node-fp';
 import path from 'path';
-import * as tsm from 'ts-morph';
+import type * as tsm from 'ts-morph';
 import applyPrettier from './applyPrettier';
 
 interface IEmptyGetDefinitions {

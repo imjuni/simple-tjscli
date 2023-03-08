@@ -1,6 +1,6 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import ITsjOption from '@config/interfaces/ITsjOption';
-import { Argv } from 'yargs';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import type { Argv } from 'yargs';
 
 export default function commandBuilder<T extends ITjsOption | ITsjOption>(args: Argv<T>) {
   args

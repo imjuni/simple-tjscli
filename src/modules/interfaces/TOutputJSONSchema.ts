@@ -1,7 +1,7 @@
-import IGeneratedJSONSchemaFromTJS from '@modules/interfaces/IGeneratedJSONSchemaFromTJS';
-import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
-import IReason from '@modules/interfaces/IReason';
-import { JSONSchema7Definition } from 'json-schema';
+import type IGeneratedJSONSchemaFromTJS from '#modules/interfaces/IGeneratedJSONSchemaFromTJS';
+import type IGeneratedJSONSchemaFromTSJ from '#modules/interfaces/IGeneratedJSONSchemaFromTSJ';
+import type IReason from '#modules/interfaces/IReason';
+import type { JSONSchema7Definition } from 'json-schema';
 
 interface ICommonOutputInfo {
   /** output filePath, apply sync option */

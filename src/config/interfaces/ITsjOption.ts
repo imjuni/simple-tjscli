@@ -1,4 +1,4 @@
-import type ICommonOption from '@config/interfaces/ICommonOption';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 
 /**
  * TypeScript ts-json-schema-generator JSONSchema option

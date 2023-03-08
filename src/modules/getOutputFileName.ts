@@ -1,7 +1,7 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import ITsjOption from '@config/interfaces/ITsjOption';
-import TGeneratedJSONSchema from '@modules/interfaces/TGenerateJSONSchema';
-import posixJoin from '@tools/posixJoin';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import type TGeneratedJSONSchema from '#modules/interfaces/TGenerateJSONSchema';
+import posixJoin from '#tools/posixJoin';
 import { getDirnameSync } from 'my-node-fp';
 
 export default function getOutputFilePath(generatedSchema: TGeneratedJSONSchema, option: ITjsOption | ITsjOption) {

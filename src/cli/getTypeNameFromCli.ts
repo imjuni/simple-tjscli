@@ -1,10 +1,10 @@
-import IPromptAnswerSelectType from '@cli/interfaces/IPromptAnswerSelectType';
-import getExportedName from '@compiler/getExportedName';
-import getFirstExportedDeclaration from '@compiler/getFirstExportedDeclaration';
-import ICommonOption from '@config/interfaces/ICommonOption';
+import type IPromptAnswerSelectType from '#cli/interfaces/IPromptAnswerSelectType';
+import getExportedName from '#compiler/getExportedName';
+import getFirstExportedDeclaration from '#compiler/getFirstExportedDeclaration';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 import inquirer from 'inquirer';
 import path from 'path';
-import * as tsm from 'ts-morph';
+import type * as tsm from 'ts-morph';
 
 interface IChoiceTypeItem {
   filePath: string;
