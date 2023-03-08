@@ -1,8 +1,8 @@
-import getExportedName from '@compiler/getExportedName';
-import getExportTypes from '@compiler/getExportedTypes';
-import getTestValue from '@tools/getTestValue';
-import posixJoin from '@tools/posixJoin';
-import * as env from '@tools/testenv';
+import getExportedName from '#compiler/getExportedName';
+import getExportTypes from '#compiler/getExportedTypes';
+import getTestValue from '#tools/getTestValue';
+import posixJoin from '#tools/posixJoin';
+import * as env from '#tools/testenv';
 import consola, { LogLevel } from 'consola';
 import { isFail } from 'my-only-either';
 import path from 'path';

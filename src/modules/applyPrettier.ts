@@ -1,8 +1,9 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 import consola from 'consola';
 import { isError } from 'my-easy-fp';
 import path from 'path';
-import prettier, { Options } from 'prettier';
+import type { Options } from 'prettier';
+import prettier from 'prettier';
 
 function getParser(
   option: ICommonOption,

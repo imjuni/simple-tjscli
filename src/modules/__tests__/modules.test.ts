@@ -1,6 +1,6 @@
-import getOutputDirPath from '@modules/getOutputDirPath';
-import posixJoin from '@tools/posixJoin';
-import * as env from '@tools/testenv';
+import getOutputDirPath from '#modules/getOutputDirPath';
+import posixJoin from '#tools/posixJoin';
+import * as env from '#tools/testenv';
 import consola, { LogLevel } from 'consola';
 import { replaceSepToPosix } from 'my-node-fp';
 import * as tsm from 'ts-morph';

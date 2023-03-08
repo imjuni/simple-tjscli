@@ -1,9 +1,10 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
-import IResolvePath from '@config/interfaces/IResolvePath';
-import getFilePath from '@modules/getFilePath';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import type IResolvePath from '#config/interfaces/IResolvePath';
+import getFilePath from '#modules/getFilePath';
 import { isEmpty, isError } from 'my-easy-fp';
-import { fail, pass, PassFailEither } from 'my-only-either';
-import * as tsm from 'ts-morph';
+import type { PassFailEither } from 'my-only-either';
+import { fail, pass } from 'my-only-either';
+import type * as tsm from 'ts-morph';
 
 // const globPaths = ['**/*.ts', '!node_modules', '!dist/**', '!artifact/**', '!**/*.d.ts', '!**/__test__'];
 

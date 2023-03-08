@@ -1,4 +1,4 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 import { replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
 import path from 'path';
 

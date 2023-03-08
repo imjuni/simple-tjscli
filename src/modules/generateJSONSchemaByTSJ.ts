@@ -1,10 +1,11 @@
-import ITsjOption from '@config/interfaces/ITsjOption';
-import getBanner from '@modules/getBanner';
-import IGeneratedJSONSchemaFromTSJ from '@modules/interfaces/IGeneratedJSONSchemaFromTSJ';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import getBanner from '#modules/getBanner';
+import type IGeneratedJSONSchemaFromTSJ from '#modules/interfaces/IGeneratedJSONSchemaFromTSJ';
 import consola from 'consola';
-import { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import { isError } from 'my-easy-fp';
-import { fail, pass, PassFailEither } from 'my-only-either';
+import type { PassFailEither } from 'my-only-either';
+import { fail, pass } from 'my-only-either';
 import * as TSJ from 'ts-json-schema-generator';
 
 export default function generateJSONSchemaByTSJ(

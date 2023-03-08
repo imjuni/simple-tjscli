@@ -1,9 +1,9 @@
-import getExportedName from '@compiler/getExportedName';
-import getFirstExportedDeclaration from '@compiler/getFirstExportedDeclaration';
+import getExportedName from '#compiler/getExportedName';
+import getFirstExportedDeclaration from '#compiler/getFirstExportedDeclaration';
 import consola from 'consola';
 import { isError } from 'my-easy-fp';
 import { replaceSepToPosix, win32DriveLetterUpdown } from 'my-node-fp';
-import * as tsm from 'ts-morph';
+import type * as tsm from 'ts-morph';
 
 /**
  * getExportTypes function params

@@ -1,5 +1,5 @@
-import getCliTjsOption from '@config/getCliTjsOption';
-import getCliTsjOption from '@config/getCliTsjOption';
+import getCliTjsOption from '#config/getCliTjsOption';
+import getCliTsjOption from '#config/getCliTsjOption';
 import consola from 'consola';
 import findUp from 'find-up';
 import fs from 'fs';

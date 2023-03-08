@@ -1,6 +1,6 @@
-import defaultTemplate from '@config/defaultTemplate';
-import ICommonOption from '@config/interfaces/ICommonOption';
-import ITemplateContents from '@config/ITemplateContents';
+import defaultTemplate from '#config/defaultTemplate';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import type ITemplateContents from '#config/ITemplateContents';
 import fastSafeStringify from 'fast-safe-stringify';
 import { isEmpty } from 'my-easy-fp';
 

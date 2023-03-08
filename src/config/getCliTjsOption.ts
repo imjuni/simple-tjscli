@@ -1,7 +1,7 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import getWorkingDirectory from '@modules/getWorkingDirectory';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import getWorkingDirectory from '#modules/getWorkingDirectory';
 import { parse } from 'jsonc-parser';
-import minimist from 'minimist';
+import type minimist from 'minimist';
 
 export default function getCliTjsOption(
   configBuf: Buffer,

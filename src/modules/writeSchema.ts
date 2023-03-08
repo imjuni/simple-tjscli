@@ -1,7 +1,7 @@
-import * as spinner from '@cli/spinner';
-import ICommonOption from '@config/interfaces/ICommonOption';
-import IReason from '@modules/interfaces/IReason';
-import TOutputJSONSchema from '@modules/interfaces/TOutputJSONSchema';
+import * as spinner from '#cli/spinner';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import type IReason from '#modules/interfaces/IReason';
+import type TOutputJSONSchema from '#modules/interfaces/TOutputJSONSchema';
 import colors from 'colors';
 import consola from 'consola';
 import fs from 'fs';

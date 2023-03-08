@@ -1,4 +1,3 @@
-/* eslint-disable import/no-extraneous-dependencies */
 import execa from 'execa';
 import { logger, series, task } from 'just-task';
 
@@ -32,15 +31,6 @@ task('debug', async () => {
   const option = '-r ts-node/register --inspect-brk --nolazy src/cli.ts';
 
   logger.info('+debug: ', cmd, option);
-
-  await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
-});
-
-task('lint', async () => {
-  const cmd = 'eslint';
-  const option = '--cache --cache-strategy content .';
-
-  logger.info('lint: ', cmd, option);
 
   await execa(cmd, splitArgs(option), { stderr: process.stderr, stdout: process.stdout });
 });

@@ -1,14 +1,15 @@
-import commandBuilder from '@cli/commandBuilder';
-import tsjCommandBuilder from '@cli/tsjCommandBuilder';
-import watchBuilder from '@cli/watchBuilder';
-import getRequiredTjsOption from '@config/getRequiredTjsOption';
-import getRequiredTsjOption from '@config/getRequiredTsjOption';
-import ITjsOption from '@config/interfaces/ITjsOption';
-import ITsjOption from '@config/interfaces/ITsjOption';
-import preLoadConfig from '@config/preLoadConfig';
-import logger from '@tools/logger';
+import commandBuilder from '#cli/commandBuilder';
+import tsjCommandBuilder from '#cli/tsjCommandBuilder';
+import watchBuilder from '#cli/watchBuilder';
+import getRequiredTjsOption from '#config/getRequiredTjsOption';
+import getRequiredTsjOption from '#config/getRequiredTsjOption';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
+import preLoadConfig from '#config/preLoadConfig';
+import logger from '#tools/logger';
 import { isError } from 'my-easy-fp';
-import yargsAnyType, { Argv } from 'yargs';
+import type { Argv } from 'yargs';
+import yargsAnyType from 'yargs';
 import { generateJSONSchemaUsingTJS, generateJSONSchemaUsingTSJ, watchJSONSchemaUsingTSJ } from './tjscli';
 
 // Yargs default type using object type(= {}). But object type cause error that

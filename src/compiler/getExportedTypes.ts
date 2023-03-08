@@ -1,7 +1,8 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
+import type ICommonOption from '#config/interfaces/ICommonOption';
 import { isError } from 'my-easy-fp';
-import { fail, pass, PassFailEither } from 'my-only-either';
-import * as tsm from 'ts-morph';
+import type { PassFailEither } from 'my-only-either';
+import { fail, pass } from 'my-only-either';
+import type * as tsm from 'ts-morph';
 import getAllExportTypes from './getAllExportedTypes';
 
 /**

@@ -1,6 +1,6 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
-import getOutputDirPath from '@modules/getOutputDirPath';
-import posixJoin from '@tools/posixJoin';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import getOutputDirPath from '#modules/getOutputDirPath';
+import posixJoin from '#tools/posixJoin';
 import fs from 'fs';
 import path from 'path';
 

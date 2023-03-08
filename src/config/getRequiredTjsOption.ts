@@ -1,4 +1,4 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
+import type ITjsOption from '#config/interfaces/ITjsOption';
 
 export default function getRequiredTjsOption(
   originConfig: Partial<Omit<ITjsOption, 'cwd' | 'w' | 'config' | 'c' | 'project' | 'p'>> &

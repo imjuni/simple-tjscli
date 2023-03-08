@@ -1,4 +1,4 @@
-import ITsjOption from '@config/interfaces/ITsjOption';
+import type ITsjOption from '#config/interfaces/ITsjOption';
 
 export default function getRequiredTsjOption(
   originConfig: Partial<Omit<ITsjOption, 'cwd' | 'w' | 'config' | 'c' | 'project' | 'p'>> &

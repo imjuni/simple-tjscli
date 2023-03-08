@@ -1,8 +1,8 @@
-import IPromptAnswerSelectFile from '@cli/interfaces/IPromptAnswerSelectFile';
-import ICommonOption from '@config/interfaces/ICommonOption';
-import getFilePath from '@modules/getFilePath';
-import fastGlobWrap from '@tools/fastGlobWrap';
-import posixJoin from '@tools/posixJoin';
+import type IPromptAnswerSelectFile from '#cli/interfaces/IPromptAnswerSelectFile';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import getFilePath from '#modules/getFilePath';
+import fastGlobWrap from '#tools/fastGlobWrap';
+import posixJoin from '#tools/posixJoin';
 import Fuse from 'fuse.js';
 import inquirer from 'inquirer';
 import inquirerAutocompletePrompt from 'inquirer-autocomplete-prompt';

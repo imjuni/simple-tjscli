@@ -1,3 +1,20 @@
 {
-  "extends": "./tsconfig.json"
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true
+  },
+  "exclude": [
+    "**/node_modules/**",
+    "examples/**/*",
+    "dist/**",
+    "**/.configs/**",
+    "**/docs/**/*",
+    "**/__test__/**",
+    "**/__tests__/**",
+    "dist/**",
+    "**/.configs/**",
+    "**/docs/**",
+    "jest.config.cjs",
+    "prepublish.cjs"
+  ]
 }

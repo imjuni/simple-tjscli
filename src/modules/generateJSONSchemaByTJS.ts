@@ -1,10 +1,11 @@
-import ITjsOption from '@config/interfaces/ITjsOption';
-import getBanner from '@modules/getBanner';
-import IGeneratedJSONSchemaFromTJS from '@modules/interfaces/IGeneratedJSONSchemaFromTJS';
+import type ITjsOption from '#config/interfaces/ITjsOption';
+import getBanner from '#modules/getBanner';
+import type IGeneratedJSONSchemaFromTJS from '#modules/interfaces/IGeneratedJSONSchemaFromTJS';
 import consola from 'consola';
 import fs from 'fs';
 import { isEmpty, isError } from 'my-easy-fp';
-import { fail, pass, PassFailEither } from 'my-only-either';
+import type { PassFailEither } from 'my-only-either';
+import { fail, pass } from 'my-only-either';
 import typescript from 'typescript';
 import * as TJS from 'typescript-json-schema';
 

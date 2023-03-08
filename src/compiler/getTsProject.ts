@@ -1,8 +1,9 @@
-import ICommonOption from '@config/interfaces/ICommonOption';
-import IResolvePath from '@config/interfaces/IResolvePath';
+import type ICommonOption from '#config/interfaces/ICommonOption';
+import type IResolvePath from '#config/interfaces/IResolvePath';
 import { isFalse } from 'my-easy-fp';
 import { existsSync } from 'my-node-fp';
-import { fail, pass, PassFailEither } from 'my-only-either';
+import type { PassFailEither } from 'my-only-either';
+import { fail, pass } from 'my-only-either';
 import * as tsm from 'ts-morph';
 
 export default function getTsProject(option: ICommonOption & IResolvePath): PassFailEither<Error, tsm.Project> {

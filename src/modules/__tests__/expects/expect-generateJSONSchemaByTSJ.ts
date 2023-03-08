@@ -1,5 +1,5 @@
-import posixJoin from '@tools/posixJoin';
-import * as env from '@tools/testenv';
+import posixJoin from '#tools/posixJoin';
+import * as env from '#tools/testenv';
 
 export default [
   {
@@ -49,7 +49,7 @@ export default [
                 required: ['name'],
               },
               college: {
-                $ref: '#/definitions/interface-1526749392-47-245-1526749392-0-246',
+                $ref: '#/definitions/interface-570542993-47-245-570542993-0-246',
               },
             },
             required: ['name', 'major', 'college'],
@@ -58,7 +58,7 @@ export default [
       },
       required: ['name', 'address', 'professors'],
       definitions: {
-        'interface-1526749392-47-245-1526749392-0-246': {
+        'interface-570542993-47-245-570542993-0-246': {
           type: 'object',
           properties: {
             name: {
@@ -97,7 +97,7 @@ export default [
                     required: ['name'],
                   },
                   college: {
-                    $ref: '#/definitions/interface-1526749392-47-245-1526749392-0-246',
+                    $ref: '#/definitions/interface-570542993-47-245-570542993-0-246',
                   },
                 },
                 required: ['name', 'major', 'college'],
